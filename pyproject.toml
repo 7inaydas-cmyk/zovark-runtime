@@ -1,0 +1,10 @@
+[project]
+name = "zovark-runtime"
+version = "0.0.0"
+description = "Zovark greenfield runtime Phase 0 contracts and invariants"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

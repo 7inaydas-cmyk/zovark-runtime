@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/contracts/memory-retrieval-result-v1.schema.json",
+  "title": "Zovark Memory Retrieval Result V1",
+  "description": "Bounded audited result for investigation_memory retrieval. Architecture contract only; not a runtime implementation.",
+  "type": "object",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "required": ["model_visible"],
+        "properties": {
+          "model_visible": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": ["model_visible_excerpt"],
+        "properties": {
+          "returned_ranges": {
+            "minItems": 1
+          },
+          "returned_byte_count": {
+            "minimum": 1
+          },
+          "model_visible_excerpt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "enum": ["fulfilled", "partial"]
+          }
+        }
+      },
+      "then": {
+        "required": ["model_visible_excerpt"],
+        "properties": {
+          "model_visible": {
+            "const": true
+          },
+          "returned_ranges": {
+            "minItems": 1
+          },
+          "returned_byte_count": {
+            "minimum": 1
+          },
+          "model_visible_excerpt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "enum": ["denied", "not_found", "range_invalid", "unavailable"]
+          }
+        }
+      },
+      "then": {
+        "required": ["data_unavailable_reason"],
+        "properties": {
+          "model_visible": {
+            "const": false
+          },
+          "returned_ranges": {
+            "maxItems": 0
+          },
+          "returned_byte_count": {
+            "const": 0
+          },
+          "model_visible_excerpt": {
+            "type": "null"
+          },
+          "data_unavailable_reason": {
+            "type": "string",
+            "enum": [
+              "access_denied",
+              "memory_not_found",
+              "range_invalid",
+              "content_not_exported",
+              "policy_disallowed",
+              "not_applicable"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "const": "denied"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data_unavailable_reason": {
+            "enum": ["access_denied", "policy_disallowed"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "const": "not_found"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data_unavailable_reason": {
+            "const": "memory_not_found"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "const": "range_invalid"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data_unavailable_reason": {
+            "const": "range_invalid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "const": "unavailable"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "data_unavailable_reason": {
+            "enum": ["content_not_exported", "not_applicable"]
+          }
+        }
+      }
+    }
+  ],
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-open-source": true,
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "Zovark",
+      "role": "canonical"
+    }
+  ],
+  "required": [
+    "result_version",
+    "retrieval_result_id",
+    "retrieval_request_id",
+    "memory_ref_id",
+    "status",
+    "returned_ranges",
+    "returned_byte_count",
+    "hash_algorithm",
+    "result_hash",
+    "audit_ref",
+    "model_visible"
+  ],
+  "properties": {
+    "result_version": {
+      "type": "string",
+      "const": "memory-retrieval-result-v1"
+    },
+    "retrieval_result_id": {
+      "$ref": "#/$defs/ref"
+    },
+    "retrieval_request_id": {
+      "$ref": "#/$defs/ref"
+    },
+    "memory_ref_id": {
+      "$ref": "#/$defs/memory_ref_id"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["fulfilled", "partial", "denied", "not_found", "range_invalid", "unavailable"]
+    },
+    "returned_ranges": {
+      "type": "array",
+      "description": "Ranges actually returned to the requester. Fulfilled, partial, and model-visible results require at least one bounded returned range. Denied, not_found, range_invalid, and unavailable results require this array to be empty.",
+      "items": {
+        "$ref": "#/$defs/range"
+      }
+    },
+    "returned_byte_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65536,
+      "description": "Number of bytes returned in the model-visible or retrieval result body. Fulfilled, partial, and model-visible results require a positive value. Failure statuses require zero."
+    },
+    "hash_algorithm": {
+      "type": "string",
+      "const": "sha256"
+    },
+    "result_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "model_visible": {
+      "type": "boolean"
+    },
+    "model_visible_excerpt": {
+      "type": ["string", "null"],
+      "maxLength": 65536,
+      "description": "Bounded retrieved content shown to the model for fulfilled, partial, or model_visible results. Null or absent for denied, not_found, range_invalid, unavailable, or metadata-only results."
+    },
+    "redaction_policy_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "data_unavailable_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "access_denied",
+        "memory_not_found",
+        "range_invalid",
+        "content_not_exported",
+        "policy_disallowed",
+        "not_applicable",
+        null
+      ]
+    },
+    "audit_ref": {
+      "$ref": "#/$defs/ref"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "memory_ref_id": {
+      "type": "string",
+      "pattern": "^mem:v1:[A-Za-z0-9._-]{1,128}:[A-Za-z0-9._-]{1,128}:sha256:[0-9a-f]{64}$"
+    },
+    "range": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Byte range using [start, end) semantics. The portable JSON Schema shape requires both bounds; semantic validation must enforce end > start.",
+          "required": ["range_type", "start", "end"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "byte"
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based inclusive byte offset."
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based exclusive byte offset. Must be greater than start."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Line range using one-based inclusive bounds. The portable JSON Schema shape requires both bounds; semantic validation must enforce end_line >= start_line.",
+          "required": ["range_type", "start_line", "end_line"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "line"
+            },
+            "start_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive start line."
+            },
+            "end_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive end line. Must be greater than or equal to start_line."
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one deterministic record identifier.",
+              "required": ["range_type", "record_id"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+                },
+                "range_hash": {
+                  "type": ["string", "null"],
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one zero-based deterministic record index.",
+              "required": ["range_type", "record_index"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "range_hash": {
+                  "type": ["string", "null"],
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

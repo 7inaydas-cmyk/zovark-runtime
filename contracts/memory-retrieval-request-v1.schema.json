@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/contracts/memory-retrieval-request-v1.schema.json",
+  "title": "Zovark Memory Retrieval Request V1",
+  "description": "Bounded capability-scoped request for investigation_memory retrieval. Architecture contract only; not a runtime implementation.",
+  "type": "object",
+  "additionalProperties": false,
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-open-source": true,
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "Zovark",
+      "role": "canonical"
+    }
+  ],
+  "required": [
+    "request_version",
+    "retrieval_request_id",
+    "memory_ref_id",
+    "investigation_id",
+    "requester_capability_ref",
+    "purpose",
+    "requested_ranges",
+    "max_bytes",
+    "audit_ref"
+  ],
+  "properties": {
+    "request_version": {
+      "type": "string",
+      "const": "memory-retrieval-request-v1"
+    },
+    "retrieval_request_id": {
+      "$ref": "#/$defs/ref"
+    },
+    "memory_ref_id": {
+      "$ref": "#/$defs/memory_ref_id"
+    },
+    "investigation_id": {
+      "$ref": "#/$defs/ref"
+    },
+    "requester_capability_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "requester_trace_record_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "purpose": {
+      "type": "string",
+      "enum": [
+        "inspect_evidence_range",
+        "validate_tool_output_range",
+        "compare_counter_evidence",
+        "prepare_proof_package",
+        "replay_verification"
+      ]
+    },
+    "requested_ranges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/range"
+      }
+    },
+    "max_bytes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65536
+    },
+    "capability_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope_ref", "allowed_operations"],
+      "properties": {
+        "scope_ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "allowed_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["read_range", "read_metadata", "verify_hash"]
+          }
+        }
+      }
+    },
+    "redaction_policy_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "audit_ref": {
+      "$ref": "#/$defs/ref"
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "memory_ref_id": {
+      "type": "string",
+      "pattern": "^mem:v1:[A-Za-z0-9._-]{1,128}:[A-Za-z0-9._-]{1,128}:sha256:[0-9a-f]{64}$"
+    },
+    "range": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Byte range using [start, end) semantics. The portable JSON Schema shape requires both bounds; semantic validation must enforce end > start.",
+          "required": ["range_type", "start", "end"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "byte"
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based inclusive byte offset."
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based exclusive byte offset. Must be greater than start."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Line range using one-based inclusive bounds. The portable JSON Schema shape requires both bounds; semantic validation must enforce end_line >= start_line.",
+          "required": ["range_type", "start_line", "end_line"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "line"
+            },
+            "start_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive start line."
+            },
+            "end_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive end line. Must be greater than or equal to start_line."
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one deterministic record identifier.",
+              "required": ["range_type", "record_id"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one zero-based deterministic record index.",
+              "required": ["range_type", "record_index"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_index": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

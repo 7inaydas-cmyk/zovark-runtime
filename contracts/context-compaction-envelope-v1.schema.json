@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/contracts/context-compaction-envelope-v1.schema.json",
+  "title": "Zovark Context Compaction Envelope V1",
+  "description": "Deterministic model-visible envelope for a lossless investigation_memory object. Architecture contract only; not a runtime implementation.",
+  "type": "object",
+  "additionalProperties": false,
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-open-source": true,
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "Zovark",
+      "role": "canonical"
+    }
+  ],
+  "required": [
+    "envelope_version",
+    "memory_ref_id",
+    "investigation_id",
+    "source_tool_call_ref",
+    "content_hash",
+    "content_size_bytes",
+    "hash_algorithm",
+    "compaction_policy_ref",
+    "model_visible_ranges",
+    "omitted_ranges",
+    "envelope_hash"
+  ],
+  "properties": {
+    "envelope_version": {
+      "type": "string",
+      "const": "context-compaction-envelope-v1"
+    },
+    "memory_ref_id": {
+      "$ref": "#/$defs/memory_ref_id"
+    },
+    "investigation_id": {
+      "$ref": "#/$defs/ref"
+    },
+    "source_tool_call_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "source_capability_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "content_hash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "content_size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hash_algorithm": {
+      "type": "string",
+      "const": "sha256"
+    },
+    "content_encoding": {
+      "type": "string",
+      "enum": ["bytes", "utf-8", "json-lines", "json-records", "unknown"]
+    },
+    "compaction_policy_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "model_visible_ranges": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/range"
+      }
+    },
+    "omitted_ranges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/range"
+      }
+    },
+    "model_visible_excerpt_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "model_visible_excerpt": {
+      "type": ["string", "null"],
+      "maxLength": 8192,
+      "description": "Optional bounded excerpt. Must match model_visible_ranges and policy. Null when the envelope is metadata-only."
+    },
+    "line_range_index_available": {
+      "type": "boolean"
+    },
+    "record_range_index_available": {
+      "type": "boolean"
+    },
+    "retrieval_allowed": {
+      "type": "boolean"
+    },
+    "retrieval_policy_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "envelope_hash": {
+      "$ref": "#/$defs/sha256"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+    },
+    "memory_ref_id": {
+      "type": "string",
+      "pattern": "^mem:v1:[A-Za-z0-9._-]{1,128}:[A-Za-z0-9._-]{1,128}:sha256:[0-9a-f]{64}$"
+    },
+    "range": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Byte range using [start, end) semantics. The portable JSON Schema shape requires both bounds; semantic validation must enforce end > start.",
+          "required": ["range_type", "start", "end"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "byte"
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based inclusive byte offset."
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Zero-based exclusive byte offset. Must be greater than start."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Line range using one-based inclusive bounds. The portable JSON Schema shape requires both bounds; semantic validation must enforce end_line >= start_line.",
+          "required": ["range_type", "start_line", "end_line"],
+          "properties": {
+            "range_type": {
+              "type": "string",
+              "const": "line"
+            },
+            "start_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive start line."
+            },
+            "end_line": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "One-based inclusive end line. Must be greater than or equal to start_line."
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one deterministic record identifier.",
+              "required": ["range_type", "record_id"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._:-]{1,160}$"
+                },
+                "record_hash": {
+                  "type": ["string", "null"],
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Record range selecting exactly one zero-based deterministic record index.",
+              "required": ["range_type", "record_index"],
+              "properties": {
+                "range_type": {
+                  "type": "string",
+                  "const": "record"
+                },
+                "record_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "record_hash": {
+                  "type": ["string", "null"],
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
