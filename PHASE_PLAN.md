@@ -11,9 +11,13 @@ Status: planning document. It does not implement runtime behavior.
 
 ## Phase 1: Single-Tenant Local Monolith Runtime Skeleton
 
+Status: skeleton introduced; runtime behavior is not implemented.
+
 - Add a minimal process layout for local execution.
 - Keep storage and retrieval mocked or absent unless separately scoped.
 - Preserve offline Replay boundaries.
+- Expose deterministic status and doctor commands only.
+- Do not implement investigation execution.
 
 ## Phase 2: Context Compaction Memory Storage And Retrieval
 
@@ -48,4 +52,3 @@ Status: planning document. It does not implement runtime behavior.
 
 - Customer-readiness begins only after benchmark-backed evidence exists.
 - Outreach remains blocked until evidence-backed readiness exists.
-

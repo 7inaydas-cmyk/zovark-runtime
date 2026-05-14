@@ -1,10 +1,21 @@
 [project]
 name = "zovark-runtime"
-version = "0.0.0"
-description = "Zovark greenfield runtime Phase 0 contracts and invariants"
+version = "0.1.0"
+description = "Zovark greenfield runtime skeleton"
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+zovark-runtime = "zovark_runtime.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
+pythonpath = ["src"]
+addopts = ["-p", "no:cacheprovider"]

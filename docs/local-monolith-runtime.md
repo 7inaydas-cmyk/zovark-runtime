@@ -1,11 +1,22 @@
 # Local Monolith Runtime
 
-Status: future Phase 1 scope.
+Status: Phase 1 skeleton introduced.
 
-The local monolith runtime does not exist yet. Phase 1 may introduce a minimal
-single-tenant process layout for local development, but it must not silently add
-AlertForge integration, benchmark harnesses, live integrations, or customer
-workflow.
+The local monolith runtime skeleton exists for deterministic status and doctor
+commands only. It is a single-tenant local target, not an investigation runtime.
+
+The skeleton currently provides:
+
+- deterministic local config defaults;
+- `zovark-runtime status`;
+- `zovark-runtime doctor`; and
+- explicit planned/not-implemented component reporting.
+
+It does not read alerts, write proof packages, call live systems, create
+customer artifacts, or generate runtime investigation output.
+
+The Phase 1 skeleton must not silently add AlertForge integration, benchmark
+harnesses, live integrations, or customer workflow.
 
 The monolith must preserve:
 
@@ -15,3 +26,16 @@ The monolith must preserve:
 - bounded model-visible context; and
 - no live system calls unless explicitly scoped.
 
+## Not Implemented
+
+- investigation runtime;
+- planner runtime;
+- executor runtime;
+- assessor runtime;
+- investigation_memory storage;
+- memory retrieval;
+- proof-package generation from runtime investigations;
+- AlertForge ingest;
+- benchmarks;
+- customer-readiness; and
+- outreach workflow.
