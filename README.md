@@ -1,9 +1,10 @@
 # Zovark Runtime
 
-Status: greenfield runtime Phase 1 skeleton.
+Status: greenfield runtime Phase 2A semantic validators.
 
 This repository is the starting point for the future Zovark runtime. Phase 1
-adds a deterministic local monolith skeleton for status reporting only.
+adds a deterministic local monolith skeleton for status reporting only. Phase
+2A adds Context Compaction Memory semantic validators only.
 
 No runtime product exists yet.
 
@@ -16,12 +17,14 @@ No runtime product exists yet.
 - Feature lifecycle placeholders for planned runtime work.
 - Static validation scripts for the contract manifest and invariant text.
 - `zovark-runtime status` and `zovark-runtime doctor` skeleton commands.
+- Standard-library Context Compaction Memory semantic validators.
 
 ## What Does Not Exist
 
 - No investigation_memory implementation.
 - No memory storage service.
 - No memory retrieval service.
+- No model context integration.
 - No investigation execution.
 - No planner, executor, or assessor runtime.
 - No sandbox EXECUTE implementation.
@@ -42,6 +45,9 @@ python scripts/check_no_unbounded_model_context.py
 ```
 
 These checks are Phase 0 static checks. They are not runtime enforcement.
+
+The Context Compaction Memory validators are domain helper functions. They are
+not storage, retrieval, model-context, proof-generation, or runtime enforcement.
 
 ## Architecture Source
 
