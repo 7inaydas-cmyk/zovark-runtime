@@ -20,3 +20,9 @@ Phase 0 does not implement storage, retrieval, planner/executor/assessor
 runtime behavior, sandbox execution, AlertForge ingest, benchmarks, or customer
 workflow.
 
+## Phase 1 Skeleton Scope
+
+The Phase 1 local monolith skeleton reports status only. It still does not
+enforce runtime behavior, execute investigations, store investigation memory,
+retrieve memory ranges, import AlertForge scenarios, run benchmarks, or create
+customer-facing artifacts.

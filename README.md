@@ -1,10 +1,9 @@
 # Zovark Runtime
 
-Status: greenfield runtime Phase 0.
+Status: greenfield runtime Phase 1 skeleton.
 
-This repository is the starting point for the future Zovark runtime. Phase 0
-contains contracts, invariants, feature lifecycle placeholders, and validation
-scripts only.
+This repository is the starting point for the future Zovark runtime. Phase 1
+adds a deterministic local monolith skeleton for status reporting only.
 
 No runtime product exists yet.
 
@@ -16,12 +15,14 @@ No runtime product exists yet.
 - Phase 0 invariants for proof, Replay, and Context Compaction Memory.
 - Feature lifecycle placeholders for planned runtime work.
 - Static validation scripts for the contract manifest and invariant text.
+- `zovark-runtime status` and `zovark-runtime doctor` skeleton commands.
 
 ## What Does Not Exist
 
 - No investigation_memory implementation.
 - No memory storage service.
 - No memory retrieval service.
+- No investigation execution.
 - No planner, executor, or assessor runtime.
 - No sandbox EXECUTE implementation.
 - No AlertForge integration.
@@ -45,4 +46,3 @@ These checks are Phase 0 static checks. They are not runtime enforcement.
 ## Architecture Source
 
 See [ARCHITECTURE_REPO_SOURCE.md](ARCHITECTURE_REPO_SOURCE.md).
-
