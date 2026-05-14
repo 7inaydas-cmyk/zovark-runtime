@@ -19,7 +19,18 @@ Status: skeleton introduced; runtime behavior is not implemented.
 - Expose deterministic status and doctor commands only.
 - Do not implement investigation execution.
 
-## Phase 2: Context Compaction Memory Storage And Retrieval
+## Phase 2A: Context Compaction Memory Semantic Validators
+
+Status: semantic validators introduced; storage and retrieval services are not
+implemented.
+
+- Validate range ordering and retrieval-result cross-field consistency.
+- Keep validators standard-library only.
+- Do not expose tool output to model context.
+- Do not implement investigation_memory storage.
+- Do not implement memory retrieval service.
+
+## Phase 2B: Context Compaction Memory Storage And Retrieval
 
 - Implement lossless investigation_memory storage.
 - Implement bounded, audited, capability-scoped retrieval.

@@ -26,3 +26,11 @@ The Phase 1 local monolith skeleton reports status only. It still does not
 enforce runtime behavior, execute investigations, store investigation memory,
 retrieve memory ranges, import AlertForge scenarios, run benchmarks, or create
 customer-facing artifacts.
+
+## Phase 2A Semantic Validator Scope
+
+Phase 2A adds Context Compaction Memory semantic validators only. These
+validators check data structures in memory. They still do not store
+investigation_memory, retrieve memory ranges from storage, place tool output in
+model context, generate proof packages from runtime state, import AlertForge
+scenarios, run benchmarks, or create customer-facing artifacts.

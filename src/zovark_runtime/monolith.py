@@ -6,6 +6,7 @@ from .config import LocalRuntimeConfig
 from .phase import (
     ALERTFORGE_STATUS,
     BENCHMARK_STATUS,
+    CONTEXT_MEMORY_VALIDATOR_STATUS,
     CUSTOMER_READINESS_STATUS,
     INVESTIGATION_MEMORY_STATUS,
     PHASE,
@@ -59,6 +60,7 @@ class LocalMonolith:
             "phase": PHASE,
             "runtime_implementation_status": RUNTIME_IMPLEMENTATION_STATUS,
             "investigation_memory_status": INVESTIGATION_MEMORY_STATUS,
+            "context_memory_validator_status": CONTEXT_MEMORY_VALIDATOR_STATUS,
             "alertforge_status": ALERTFORGE_STATUS,
             "benchmark_status": BENCHMARK_STATUS,
             "customer_readiness_status": CUSTOMER_READINESS_STATUS,
@@ -91,4 +93,3 @@ class LocalMonolith:
             ],
             "not_implemented_components": self.not_implemented_components(),
         }
-
