@@ -52,3 +52,13 @@ not storage, retrieval, model-context, proof-generation, or runtime enforcement.
 ## Architecture Source
 
 See [ARCHITECTURE_REPO_SOURCE.md](ARCHITECTURE_REPO_SOURCE.md).
+
+## Architecture Map
+
+See [docs/implementation-map.md](docs/implementation-map.md) for the current
+runtime implementation map and [docs/current-system-diagram.md](docs/current-system-diagram.md)
+for consolidated system diagrams.
+
+Those documents are maps only. They do not change runtime implementation,
+storage, retrieval, model context integration, proof generation, AlertForge,
+benchmarks, customer-readiness, or outreach scope.

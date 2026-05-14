@@ -30,11 +30,28 @@ implemented.
 - Do not implement investigation_memory storage.
 - Do not implement memory retrieval service.
 
-## Phase 2B: Context Compaction Memory Storage And Retrieval
+## Phase 2B: Context Compaction Memory Lossless Storage
+
+Before Phase 2B implementation, run the architecture-query checklist in
+`docs/architecture-query-checklist.md`.
+
+Phase 2B should start as storage-only unless explicitly approved. Retrieval,
+model-visible envelope/context integration, proof generation, AlertForge,
+benchmarks, and customer-readiness remain separate later phases.
 
 - Implement lossless investigation_memory storage.
+- Preserve full content hashes, sizes, and source tool-call linkage.
+- Do not expose stored tool output to model context.
+
+## Phase 2C: Context Compaction Memory Bounded Retrieval
+
 - Implement bounded, audited, capability-scoped retrieval.
+- Keep failure results explicit and non-model-visible.
+
+## Phase 2D: Deterministic Envelope And Model-Visible Context
+
 - Enforce deterministic model-visible envelopes.
+- Record exact ranges and byte counts for anything the model sees.
 
 ## Phase 3: Proof Package Generation From Runtime Investigation
 
