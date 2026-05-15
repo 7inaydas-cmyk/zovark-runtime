@@ -1,10 +1,11 @@
 # Zovark Runtime
 
-Status: greenfield runtime Phase 2A semantic validators.
+Status: greenfield runtime Phase 2B lossless storage substrate.
 
 This repository is the starting point for the future Zovark runtime. Phase 1
 adds a deterministic local monolith skeleton for status reporting only. Phase
-2A adds Context Compaction Memory semantic validators only.
+2A adds Context Compaction Memory semantic validators. Phase 2B adds lossless
+local `investigation_memory` storage only.
 
 No runtime product exists yet.
 
@@ -18,11 +19,11 @@ No runtime product exists yet.
 - Static validation scripts for the contract manifest and invariant text.
 - `zovark-runtime status` and `zovark-runtime doctor` skeleton commands.
 - Standard-library Context Compaction Memory semantic validators.
+- Lossless local `investigation_memory` storage substrate.
 
 ## What Does Not Exist
 
-- No investigation_memory implementation.
-- No memory storage service.
+- No full investigation_memory runtime.
 - No memory retrieval service.
 - No model context integration.
 - No investigation execution.
@@ -48,6 +49,10 @@ These checks are Phase 0 static checks. They are not runtime enforcement.
 
 The Context Compaction Memory validators are domain helper functions. They are
 not storage, retrieval, model-context, proof-generation, or runtime enforcement.
+
+The investigation_memory storage substrate stores exact local bytes and
+deterministic metadata for verification. It is not a retrieval service, does not
+produce model-visible output, and does not generate proof packages.
 
 ## Architecture Source
 

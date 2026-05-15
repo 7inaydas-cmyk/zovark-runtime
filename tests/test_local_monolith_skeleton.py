@@ -10,7 +10,10 @@ from zovark_runtime.phase import (
     ALERTFORGE_STATUS,
     BENCHMARK_STATUS,
     CUSTOMER_READINESS_STATUS,
+    INVESTIGATION_MEMORY_RETRIEVAL_STATUS,
+    INVESTIGATION_MEMORY_STORAGE_STATUS,
     INVESTIGATION_MEMORY_STATUS,
+    MODEL_CONTEXT_INTEGRATION_STATUS,
     PHASE,
     RUNTIME_IMPLEMENTATION_STATUS,
 )
@@ -28,9 +31,15 @@ def test_status_reports_skeleton_only() -> None:
 
     assert status["phase"] == PHASE
     assert status["runtime_implementation_status"] == RUNTIME_IMPLEMENTATION_STATUS
-    assert status["runtime_implementation_status"] == "skeleton-only"
+    assert status["runtime_implementation_status"] == "storage-substrate-only"
     assert status["investigation_memory_status"] == INVESTIGATION_MEMORY_STATUS
-    assert status["investigation_memory_status"] == "not-implemented"
+    assert status["investigation_memory_status"] == "storage-only-partial"
+    assert status["investigation_memory_storage_status"] == INVESTIGATION_MEMORY_STORAGE_STATUS
+    assert status["investigation_memory_storage_status"] == "lossless-local-storage-only"
+    assert status["investigation_memory_retrieval_status"] == INVESTIGATION_MEMORY_RETRIEVAL_STATUS
+    assert status["investigation_memory_retrieval_status"] == "not-implemented"
+    assert status["model_context_integration_status"] == MODEL_CONTEXT_INTEGRATION_STATUS
+    assert status["model_context_integration_status"] == "not-implemented"
     assert status["alertforge_status"] == ALERTFORGE_STATUS
     assert status["alertforge_status"] == "not-implemented"
     assert status["benchmark_status"] == BENCHMARK_STATUS
@@ -47,9 +56,10 @@ def test_status_lists_unimplemented_runtime_components() -> None:
         "assessor_runtime",
         "benchmark_harness",
         "customer_readiness_workflow",
+        "deterministic_envelope_generation",
         "executor_runtime",
         "investigation_memory_retrieval",
-        "investigation_memory_storage",
+        "model_context_integration",
         "planner_runtime",
         "proof_package_generation",
         "sandbox_execute",
@@ -76,7 +86,7 @@ def test_cli_doctor_is_deterministic(capsys) -> None:
         {
             "name": "runtime_scope",
             "status": "ok",
-            "detail": "skeleton-only",
+            "detail": "storage-substrate-only",
         },
         {
             "name": "live_integrations",
@@ -135,4 +145,3 @@ def test_package_modules_import_without_side_effects(tmp_path, monkeypatch) -> N
         importlib.import_module(module)
 
     assert list(tmp_path.iterdir()) == []
-

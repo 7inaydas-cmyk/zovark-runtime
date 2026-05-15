@@ -33,7 +33,7 @@ This map is based on:
 | Phase 0 contracts/invariants | implemented | Contract snapshot, manifest check, and invariant text exist. |
 | Phase 1 local Monolith skeleton | implemented | Status and doctor commands only. |
 | Phase 2A semantic validators | implemented | In-memory semantic validation helpers only. |
-| Phase 2B lossless storage | not implemented | No `investigation_memory` storage exists. |
+| Phase 2B lossless storage | implemented | Local file-backed storage substrate only. |
 | Bounded retrieval | not implemented | No retrieval service or retrieval execution exists. |
 | Deterministic envelope generation | not implemented | Contracts exist; runtime envelope generation does not. |
 | Runtime investigation planner/executor/assessor | not implemented | No investigation execution exists. |
@@ -55,7 +55,7 @@ flowchart TD
     C --> P1[Phase 1 implemented<br/>local Monolith skeleton]
     C --> P2A[Phase 2A implemented<br/>semantic validators]
 
-    C -. future .-> P2B[Phase 2B planned<br/>lossless storage]
+    C --> P2B[Phase 2B implemented<br/>lossless storage substrate]
     P2B -. future .-> P2C[Phase 2C planned<br/>bounded retrieval]
     P2C -. future .-> P2D[Phase 2D planned<br/>deterministic envelopes and model-visible context]
     P2D -. future .-> P3[Phase 3 planned<br/>runtime proof generation]
@@ -84,10 +84,10 @@ This diagram is a target flow. It is not implemented today.
 
 ## Phase Boundaries
 
-Phase 2B should start as lossless storage only unless a later PR explicitly
-approves more scope. Bounded retrieval, deterministic envelope/model-visible
-context, runtime proof generation, AlertForge ingest, synthetic validation,
-benchmarks, and customer-readiness remain separate later phases.
+Phase 2B is lossless storage only. Bounded retrieval, deterministic
+envelope/model-visible context, runtime proof generation, AlertForge ingest,
+synthetic validation, benchmarks, and customer-readiness remain separate later
+phases.
 
 The Context Compaction Memory invariant remains:
 

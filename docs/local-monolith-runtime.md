@@ -12,8 +12,10 @@ The skeleton currently provides:
 - `zovark-runtime doctor`; and
 - explicit planned/not-implemented component reporting.
 
-It does not read alerts, write proof packages, call live systems, create
-customer artifacts, or generate runtime investigation output.
+Phase 2B adds lossless local `investigation_memory` storage substrate status.
+The monolith still does not read alerts, retrieve memory, expose model context,
+write proof packages, call live systems, create customer artifacts, or generate
+runtime investigation output.
 
 The Phase 1 skeleton must not silently add AlertForge integration, benchmark
 harnesses, live integrations, or customer workflow.
@@ -32,8 +34,8 @@ The monolith must preserve:
 - planner runtime;
 - executor runtime;
 - assessor runtime;
-- investigation_memory storage;
 - memory retrieval;
+- model context integration;
 - proof-package generation from runtime investigations;
 - AlertForge ingest;
 - benchmarks;

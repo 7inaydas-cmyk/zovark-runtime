@@ -1,7 +1,9 @@
 # F-005: Investigation Memory Storage
 
-State: not implemented.
+State: lossless-local-storage-only.
 
-Future investigation_memory storage must preserve oversized tool output
-losslessly and record stable hashes and sizes before model exposure.
+Phase 2B investigation_memory storage preserves bytes losslessly and records
+stable hashes, sizes, and source linkage before any future model exposure.
 
+This feature does not include retrieval, model context integration, proof
+generation, AlertForge ingest, benchmarks, or customer-facing workflow.
