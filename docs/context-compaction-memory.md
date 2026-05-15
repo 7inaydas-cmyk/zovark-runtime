@@ -1,6 +1,6 @@
 # Context Compaction Memory
 
-Status: Phase 2A semantic validator note.
+Status: Phase 2B storage-only note.
 
 The core invariant is: no model receives unbounded raw tool output.
 
@@ -20,8 +20,10 @@ Phase 2A adds semantic validators for ranges and retrieval-result objects. The
 validators check bounded range semantics and retrieval-result consistency in
 memory only.
 
-Storage and retrieval services still do not exist. These validators are not
-runtime storage or retrieval enforcement. No model receives tool output through
-these validators yet. Runtime proof-package generation does not exist yet.
-AlertForge integration does not exist yet. Benchmarks and customer-readiness do
-not exist yet.
+Phase 2B adds a lossless local `investigation_memory` storage substrate. It
+stores exact bytes and deterministic metadata for verification. It does not
+provide a retrieval service, does not generate envelopes, and does not place
+stored content into model context.
+
+Runtime proof-package generation does not exist yet. AlertForge integration does
+not exist yet. Benchmarks and customer-readiness do not exist yet.

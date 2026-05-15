@@ -32,6 +32,9 @@ implemented.
 
 ## Phase 2B: Context Compaction Memory Lossless Storage
 
+Status: lossless local storage substrate introduced; retrieval and model context
+integration are not implemented.
+
 Before Phase 2B implementation, run the architecture-query checklist in
 `docs/architecture-query-checklist.md`.
 

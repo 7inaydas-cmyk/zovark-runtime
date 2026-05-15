@@ -11,8 +11,8 @@ flowchart TD
     R --> P0[Implemented<br/>Phase 0 contracts and invariants]
     R --> P1[Implemented<br/>Phase 1 local Monolith skeleton]
     R --> P2A[Implemented<br/>Phase 2A semantic validators]
+    R --> P2B[Implemented<br/>Phase 2B lossless storage substrate]
 
-    R -. not implemented .-> S[Phase 2B lossless storage]
     R -. not implemented .-> RET[Bounded retrieval service]
     R -. not implemented .-> ENV[Deterministic envelope generation]
     R -. not implemented .-> RUN[Planner executor assessor runtime]
@@ -53,9 +53,8 @@ flowchart LR
     RES --> PROOF[Future proof and Replay record]
 ```
 
-Phase 2B should implement only the storage portion unless explicitly approved.
-Retrieval, envelope generation, model-visible context, and proof/Replay
-recording remain later phases.
+Phase 2B implements only the storage portion. Retrieval, envelope generation,
+model-visible context, and proof/Replay recording remain later phases.
 
 ## Diagram D: Blocked Downstream Items
 

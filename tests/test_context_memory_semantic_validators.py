@@ -12,7 +12,11 @@ from zovark_runtime.context_memory.errors import (
 )
 from zovark_runtime.context_memory.ranges import validate_range, validate_ranges
 from zovark_runtime.context_memory.retrieval_result import validate_retrieval_result
-from zovark_runtime.phase import CONTEXT_MEMORY_VALIDATOR_STATUS, INVESTIGATION_MEMORY_STATUS
+from zovark_runtime.phase import (
+    CONTEXT_MEMORY_VALIDATOR_STATUS,
+    INVESTIGATION_MEMORY_RETRIEVAL_STATUS,
+    INVESTIGATION_MEMORY_STORAGE_STATUS,
+)
 
 
 VALID_BYTE_RANGE = {"range_type": "byte", "start": 0, "end": 1}
@@ -206,7 +210,8 @@ def test_valid_retrieval_results(result: dict[str, object]) -> None:
 
 def test_validator_status_does_not_imply_storage_or_retrieval() -> None:
     assert CONTEXT_MEMORY_VALIDATOR_STATUS == "semantic-validators-only"
-    assert INVESTIGATION_MEMORY_STATUS == "not-implemented"
+    assert INVESTIGATION_MEMORY_STORAGE_STATUS == "lossless-local-storage-only"
+    assert INVESTIGATION_MEMORY_RETRIEVAL_STATUS == "not-implemented"
 
 
 def test_validator_calls_create_no_files(tmp_path, monkeypatch) -> None:
