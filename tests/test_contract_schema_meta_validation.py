@@ -3,7 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
+import pytest
+
+
+jsonschema = pytest.importorskip("jsonschema")
+Draft202012Validator = jsonschema.Draft202012Validator
 
 
 ROOT = Path(__file__).resolve().parents[1]
