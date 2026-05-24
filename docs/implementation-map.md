@@ -12,8 +12,8 @@ This map is based on:
 - `7inaydas-cmyk/zovark-architecture` tag
   `v3.2.5.0-baseline-consolidated`, commit
   `a8003de839ac3bd8412a7cb520c591f52f4bd64e`.
-- Runtime repository `7inaydas-cmyk/zovark-runtime` main commit
-  `40b5ced0df9e17d5826e75cd2f940f0a83cffda6`.
+- Runtime repository `7inaydas-cmyk/zovark-runtime`; read this map at the
+  repository revision that contains it.
 - Architecture files:
   - `docs/architecture-current-state.md`
   - `docs/context-compaction-memory.md`
