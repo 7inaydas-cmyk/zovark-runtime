@@ -7,7 +7,7 @@ This is not a retrieval service and does not produce model-visible output.
 
 Future storage work must keep vendor schemas as mapping/export surfaces only.
 Canonical runtime storage must use Zovark-owned schemas compatible with the
-ADR-0036 schema boundary.
+INV-027 schema boundary.
 
 Investigation memory storage records at minimum:
 

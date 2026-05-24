@@ -17,7 +17,7 @@ Always check:
 - `docs/implementation-map.md`
 - `docs/current-system-diagram.md`
 - Architecture baseline:
-  `7inaydas-cmyk/zovark-architecture@arch-v4.1-runtime-phase0`
+  `7inaydas-cmyk/zovark-architecture@v3.2.5.0-baseline-consolidated`
 - Architecture docs:
   - `docs/architecture-current-state.md`
   - `docs/context-compaction-memory.md`

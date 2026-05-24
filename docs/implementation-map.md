@@ -10,8 +10,8 @@ scope.
 This map is based on:
 
 - `7inaydas-cmyk/zovark-architecture` tag
-  `arch-v4.1-runtime-phase0`, commit
-  `0f4582267ac2a63a90d4c218ad442765785ca63b`.
+  `v3.2.5.0-baseline-consolidated`, commit
+  `a8003de839ac3bd8412a7cb520c591f52f4bd64e`.
 - Runtime repository `7inaydas-cmyk/zovark-runtime` main commit
   `40b5ced0df9e17d5826e75cd2f940f0a83cffda6`.
 - Architecture files:
@@ -48,7 +48,7 @@ This map is based on:
 
 ```mermaid
 flowchart TD
-    A[zovark-architecture<br/>reference proof governance repo] --> B[architecture baseline tag<br/>arch-v4.1-runtime-phase0]
+    A[zovark-architecture<br/>reference proof governance repo] --> B[architecture baseline tag<br/>v3.2.5.0-baseline-consolidated]
     B --> C[zovark-runtime<br/>runtime repo]
 
     C --> P0[Phase 0 implemented<br/>contracts and invariants]
