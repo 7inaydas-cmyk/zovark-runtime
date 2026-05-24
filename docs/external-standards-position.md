@@ -11,7 +11,7 @@ OCSF may be considered later as a mapping, export, or import surface. It must
 not silently become the canonical Zovark schema for Replay, audit, storage,
 verdicts, or customer evidence.
 
-Zovark-owned contracts remain canonical unless a future ADR-0036-compatible
+Zovark-owned contracts remain canonical unless a future INV-027-compatible
 governance decision says otherwise.
 
 ## Vendor Schemas
@@ -26,7 +26,7 @@ Future vendor mapping work must preserve:
 - no raw prompt, tool output, payload, message, note, or hidden reasoning
   leakage;
 - explicit valid/invalid fixtures before runtime enforcement claims; and
-- ADR-0036 schema-boundary governance.
+- INV-027 schema-boundary governance.
 
 ## Current Status
 

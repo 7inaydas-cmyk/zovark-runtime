@@ -5,9 +5,18 @@ Status: provenance note for the Phase 0 runtime skeleton.
 ## Source
 
 - Source repository: `https://github.com/7inaydas-cmyk/zovark-architecture`
-- Architecture baseline tag: `arch-v4.1-runtime-phase0`
+- Architecture baseline tag: `v3.2.5.0-baseline-consolidated`
 - Architecture baseline commit:
-  `0f4582267ac2a63a90d4c218ad442765785ca63b`
+  `a8003de839ac3bd8412a7cb520c591f52f4bd64e`
+
+## Baseline Inventory
+
+- 26 ADR files: 25 binding ADRs plus ADR-0043 proposed/pending founder
+  sign-off.
+- 39 invariants.
+- 23 authoritative schemas.
+- Replay compatibility contract:
+  `architecture/replay-compatibility.yaml`.
 
 ## Copied Contracts
 
@@ -26,4 +35,3 @@ fixtures.
 This source note does not import adapter behavior, verifier behavior, generated
 proof packages, fixtures, AlertForge integration, benchmarks, customer-readiness
 material, signing, legal, or compliance scope.
-

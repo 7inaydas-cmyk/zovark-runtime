@@ -13,7 +13,10 @@ No runtime product exists yet.
 
 - Contract snapshot copied from
   `7inaydas-cmyk/zovark-architecture` at tag
-  `arch-v4.1-runtime-phase0`.
+  `v3.2.5.0-baseline-consolidated`.
+- Architecture baseline inventory: 25 binding ADRs plus ADR-0043
+  proposed/pending founder sign-off, 39 invariants, 23 authoritative schemas,
+  and replay compatibility contract `architecture/replay-compatibility.yaml`.
 - Phase 0 invariants for proof, Replay, and Context Compaction Memory.
 - Feature lifecycle placeholders for planned runtime work.
 - Static validation scripts for the contract manifest and invariant text.

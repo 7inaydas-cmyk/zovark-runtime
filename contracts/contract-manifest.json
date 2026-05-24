@@ -1,7 +1,7 @@
 {
   "source_repo": "https://github.com/7inaydas-cmyk/zovark-architecture",
-  "source_tag": "arch-v4.1-runtime-phase0",
-  "source_commit": "0f4582267ac2a63a90d4c218ad442765785ca63b",
+  "source_tag": "v3.2.5.0-baseline-consolidated",
+  "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
   "status": "draft-architecture-contract",
   "note": "Contract snapshot only; not runtime-enforced yet.",
   "contracts": [
@@ -25,4 +25,3 @@
     }
   ]
 }
-

@@ -9,7 +9,7 @@ model execution.
 RamaLama is not implemented in `zovark-runtime`.
 
 RamaLama is not implemented in the current architecture baseline
-`arch-v4.1-runtime-phase0`.
+`v3.2.5.0-baseline-consolidated`.
 
 No live LLM integration exists in `zovark-runtime`. No model context integration
 exists yet.
