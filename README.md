@@ -14,6 +14,8 @@ No runtime product exists yet.
 - Contract snapshot copied from
   `7inaydas-cmyk/zovark-architecture` at tag
   `v3.2.5.0-baseline-consolidated`.
+- Copied `scanner_finding_envelope.schema.json` for future synthetic alert
+  fixture validation. It is not runtime-enforced yet.
 - Architecture baseline inventory: 25 binding ADRs plus ADR-0043
   proposed/pending founder sign-off, 39 invariants, 23 authoritative schemas,
   and replay compatibility contract `architecture/replay-compatibility.yaml`.
