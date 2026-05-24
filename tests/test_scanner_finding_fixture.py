@@ -43,7 +43,8 @@ def test_scanner_finding_fixture_validates_against_canonical_schema() -> None:
     assert fixture["tenant_id"] == "22222222-2222-4222-8222-222222222222"
     assert fixture["envelope_id"] == "11111111-1111-4111-8111-111111111111"
     assert "Synthetic" in fixture["raw_finding"]["title"]
-    assert "synthetic" in fixture["raw_finding"]["description"]
+    description = fixture["raw_finding"]["description"].lower()
+    assert "synthetic" in description
 
 
 def test_scanner_finding_fixture_contains_no_forbidden_payload_markers() -> None:
