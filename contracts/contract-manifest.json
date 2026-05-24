@@ -1,27 +1,33 @@
 {
-  "source_repo": "https://github.com/7inaydas-cmyk/zovark-architecture",
-  "source_tag": "v3.2.5.0-baseline-consolidated",
-  "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
-  "status": "draft-architecture-contract",
-  "note": "Contract snapshot only; not runtime-enforced yet.",
   "contracts": [
     {
+      "note": "Copied from the architecture baseline tag; not runtime-enforced yet.",
       "path": "contracts/context-compaction-envelope-v1.schema.json",
       "sha256": "0c6fc0491aa686f0e379d12631cb571523cc2a957c516bef20b449450aadcd57",
-      "status": "draft-architecture-contract",
-      "note": "Copied from the architecture baseline tag; not runtime-enforced yet."
+      "status": "draft-architecture-contract"
     },
     {
+      "note": "Copied from the architecture baseline tag; not runtime-enforced yet.",
       "path": "contracts/memory-retrieval-request-v1.schema.json",
       "sha256": "1904a811e68b6c35e1e816b58f17c51fdb563c09fd42c85035038be3a6fc88e8",
-      "status": "draft-architecture-contract",
-      "note": "Copied from the architecture baseline tag; not runtime-enforced yet."
+      "status": "draft-architecture-contract"
     },
     {
+      "note": "Copied from the architecture baseline tag; not runtime-enforced yet.",
       "path": "contracts/memory-retrieval-result-v1.schema.json",
       "sha256": "0396fe04363143014aa3bc59385c84f1963f65a7695e34cec4c4548e45ca6984",
-      "status": "draft-architecture-contract",
-      "note": "Copied from the architecture baseline tag; not runtime-enforced yet."
+      "status": "draft-architecture-contract"
+    },
+    {
+      "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical scanner/finding envelope contract for future synthetic alert fixture validation. Not runtime-enforced yet.",
+      "path": "contracts/scanner_finding_envelope.schema.json",
+      "sha256": "a66d934f1650adfcff06d60b3d9d6c24d1765fad03318fb4c278f4975ffa1b6c",
+      "status": "draft-architecture-contract"
     }
-  ]
+  ],
+  "note": "Contract snapshot only; not runtime-enforced yet.",
+  "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
+  "source_repo": "https://github.com/7inaydas-cmyk/zovark-architecture",
+  "source_tag": "v3.2.5.0-baseline-consolidated",
+  "status": "draft-architecture-contract"
 }

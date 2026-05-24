@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/scanner_finding_envelope/v1.0.0/schema.json",
+  "title": "Scanner Finding Envelope",
+  "description": "Inbound finding from an external scanner (vuln, IDS, EDR). Normalized to OCSF before being correlated. Tenant-tagged at intake; ingest path enforces tenant_id presence.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "integrations-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "OCSF-1.1",
+      "version": "1.1",
+      "role": "referenced",
+      "license": "Apache-2.0",
+      "source": "https://schema.ocsf.io/"
+    },
+    {
+      "standard": "Sigma",
+      "version": "2024-Q3",
+      "role": "referenced",
+      "license": "DRL-1.1",
+      "source": "https://github.com/SigmaHQ/sigma"
+    }
+  ],
+  "x-zovark-breaking-change-requires-adr": true,
+  "additionalProperties": false,
+  "required": [
+    "envelope_id",
+    "tenant_id",
+    "received_at_ns",
+    "scanner_type",
+    "scanner_version",
+    "ocsf_class",
+    "raw_finding",
+    "ingest_provenance"
+  ],
+  "properties": {
+    "envelope_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "received_at_ns": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "scanner_type": {
+      "enum": [
+        "edr",
+        "vulnerability",
+        "ids",
+        "siem",
+        "cnapp",
+        "custom"
+      ]
+    },
+    "scanner_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ocsf_class": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 9999,
+      "description": "OCSF class number (e.g., 4002 for vulnerability finding)."
+    },
+    "raw_finding": {
+      "type": "object",
+      "description": "Bounded source finding summary preserved for replay hashing; raw scanner payloads must be stored outside model-visible proof contracts.",
+      "additionalProperties": false,
+      "properties": {
+        "source_finding_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "source_event_uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1024
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "informational",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "observed_at_ns": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "normalized_finding": {
+      "type": "object",
+      "description": "Bounded OCSF-normalized finding summary produced by ingest adapters.",
+      "additionalProperties": false,
+      "properties": {
+        "ocsf_class_uid": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 9999
+        },
+        "category_uid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "type_uid": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "activity_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "severity_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "finding_uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "ingest_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adapter",
+        "adapter_version"
+      ],
+      "properties": {
+        "adapter": {
+          "type": "string"
+        },
+        "adapter_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "source_signature": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 1024,
+          "description": "If the source signs its outbound webhook, the signature is preserved here."
+        }
+      }
+    }
+  }
+}
