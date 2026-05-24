@@ -48,6 +48,16 @@ python scripts/check_invariants.py
 python scripts/check_no_unbounded_model_context.py
 ```
 
+Local proof status:
+
+```bash
+PYTHONPATH=src python3 -m zovark_runtime.cli proof-status
+```
+
+This command reports local repository proof checks and deferred capabilities.
+It does not indicate customer, production, SLA, compliance, or
+autonomous-dispatch readiness.
+
 These checks are Phase 0 static checks. They are not runtime enforcement.
 
 The Context Compaction Memory validators are domain helper functions. They are
