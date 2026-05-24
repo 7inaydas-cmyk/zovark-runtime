@@ -78,3 +78,31 @@ def test_build_proof_status_fails_when_a_local_check_fails(tmp_path: Path) -> No
         "status": "fail",
         "detail": "simulated failure",
     } in payload["local_checks"]
+
+
+def test_build_proof_status_reports_missing_manifest(tmp_path: Path) -> None:
+    def passing_check(root: Path, name: str, script: Path) -> LocalCheckResult:
+        return LocalCheckResult(name=name, status="pass", detail="simulated pass")
+
+    payload, exit_code = proof_status.build_proof_status(tmp_path, check_runner=passing_check)
+
+    assert exit_code == 1
+    assert payload["architecture_baseline"]["status"] == "fail"
+    assert "contract-manifest.json" in payload["architecture_baseline"]["detail"]
+    assert "missing" in payload["architecture_baseline"]["detail"]
+    assert "deferred_capabilities" in payload
+
+
+def test_build_proof_status_reports_malformed_manifest(tmp_path: Path) -> None:
+    manifest_dir = tmp_path / "contracts"
+    manifest_dir.mkdir()
+    (manifest_dir / "contract-manifest.json").write_text("{not json", encoding="utf-8")
+
+    def passing_check(root: Path, name: str, script: Path) -> LocalCheckResult:
+        return LocalCheckResult(name=name, status="pass", detail="simulated pass")
+
+    payload, exit_code = proof_status.build_proof_status(tmp_path, check_runner=passing_check)
+
+    assert exit_code == 1
+    assert payload["architecture_baseline"]["status"] == "fail"
+    assert "invalid JSON" in payload["architecture_baseline"]["detail"]

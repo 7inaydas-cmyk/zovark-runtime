@@ -126,13 +126,31 @@ def pytest_availability() -> dict[str, str]:
     }
 
 
-def read_architecture_baseline(root: Path) -> dict[str, str]:
+def read_architecture_baseline(root: Path) -> tuple[dict[str, str], bool]:
     manifest_path = root / "contracts" / "contract-manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    return {
-        "source_tag": str(manifest["source_tag"]),
-        "source_commit": str(manifest["source_commit"]),
-    }
+    rel_path = "contracts/contract-manifest.json"
+
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        return {
+            "source_tag": str(manifest["source_tag"]),
+            "source_commit": str(manifest["source_commit"]),
+        }, True
+    except FileNotFoundError:
+        return {
+            "status": "fail",
+            "detail": f"{rel_path}: missing",
+        }, False
+    except json.JSONDecodeError as exc:
+        return {
+            "status": "fail",
+            "detail": f"{rel_path}: invalid JSON: {exc.msg}",
+        }, False
+    except KeyError as exc:
+        return {
+            "status": "fail",
+            "detail": f"{rel_path}: missing key {exc.args[0]}",
+        }, False
 
 
 def build_proof_status(
@@ -144,11 +162,12 @@ def build_proof_status(
     actual_root = root or repo_root()
     checks = [check_runner(actual_root, name, script) for name, script in PROOF_CHECK_SCRIPTS]
     failed = [check for check in checks if check.status != "pass"]
+    architecture_baseline, baseline_loaded = read_architecture_baseline(actual_root)
 
     payload: dict[str, object] = {
         "report": "local proof status",
         "runtime_proof_loop": "incomplete",
-        "architecture_baseline": read_architecture_baseline(actual_root),
+        "architecture_baseline": architecture_baseline,
         "baseline_inventory": BASELINE_INVENTORY,
         "local_checks": [check.as_dict() for check in checks],
         "pytest": pytest_availability(),
@@ -159,4 +178,4 @@ def build_proof_status(
             "external_commitments": "not-included",
         },
     }
-    return payload, 1 if failed else 0
+    return payload, 1 if failed or not baseline_loaded else 0
