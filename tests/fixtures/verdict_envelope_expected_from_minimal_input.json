@@ -1,0 +1,23 @@
+{
+  "verdict_id": "59cc2549-8196-5e13-ba78-fd5debe067d6",
+  "tenant_id": "22222222-2222-4222-8222-222222222222",
+  "investigation_id": "33333333-3333-4333-8333-333333333333",
+  "confidence_basis_points": 0,
+  "verdict_class": "indeterminate",
+  "recommended_actions": [],
+  "threshold_version": "proof-thresholds-819f309a5823",
+  "policy_snapshot_version": "synthetic-policy-1.0.0",
+  "evidence": [
+    {
+      "finding_id": "de7e4abf-8521-5421-b067-e2eb001fd8fe",
+      "tenant_id": "22222222-2222-4222-8222-222222222222",
+      "ocsf_class_uid": 2004,
+      "ocsf_category_uid": 2,
+      "severity_id": 3,
+      "occurred_at_ns": 1700000000000000000,
+      "source_event_uids": [
+        "synthetic-event-001"
+      ]
+    }
+  ]
+}
