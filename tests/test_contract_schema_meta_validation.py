@@ -50,7 +50,7 @@ def test_verdict_schema_refs_resolve_to_local_contracts() -> None:
         schema = load_contract_schema(schema_path)
         schema_id = schema.get("$id")
         if isinstance(schema_id, str):
-            schemas_by_id[schema_id.split("#", 1)[0]] = schema_path
+            schemas_by_id[schema_id.split("#", 1)[0]] = schema
 
     missing_refs = []
     for ref in iter_refs(load_contract_schema(VERDICT_SCHEMA)):
