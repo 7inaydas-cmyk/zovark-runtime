@@ -23,9 +23,12 @@ Status: provenance note for the Phase 0 runtime skeleton.
 Only the following contracts were copied:
 
 - `contracts/context-compaction-envelope-v1.schema.json`
+- `contracts/finding.schema.json`
 - `contracts/memory-retrieval-request-v1.schema.json`
 - `contracts/memory-retrieval-result-v1.schema.json`
+- `contracts/recommended_action.schema.json`
 - `contracts/scanner_finding_envelope.schema.json`
+- `contracts/verdict_envelope.schema.json`
 
 They remain `draft-architecture-contract` material in this repository until
 runtime enforcement exists with implementation, tests, and valid/invalid

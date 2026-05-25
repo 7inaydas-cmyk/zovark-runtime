@@ -7,6 +7,12 @@
       "status": "draft-architecture-contract"
     },
     {
+      "path": "contracts/finding.schema.json",
+      "sha256": "0f41668e33fce8b1cb96305a4117d667797e5566609b8c4ac2490e2d50339ec0",
+      "status": "draft-architecture-contract",
+      "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
+    },
+    {
       "note": "Copied from the architecture baseline tag; not runtime-enforced yet.",
       "path": "contracts/memory-retrieval-request-v1.schema.json",
       "sha256": "1904a811e68b6c35e1e816b58f17c51fdb563c09fd42c85035038be3a6fc88e8",
@@ -19,10 +25,22 @@
       "status": "draft-architecture-contract"
     },
     {
+      "path": "contracts/recommended_action.schema.json",
+      "sha256": "9adcd54f5572c645d1d7c4581bab19649819ec03f7f0198b15d670b946d33607",
+      "status": "draft-architecture-contract",
+      "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
+    },
+    {
       "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical scanner/finding envelope contract for future synthetic alert fixture validation. Not runtime-enforced yet.",
       "path": "contracts/scanner_finding_envelope.schema.json",
       "sha256": "a66d934f1650adfcff06d60b3d9d6c24d1765fad03318fb4c278f4975ffa1b6c",
       "status": "draft-architecture-contract"
+    },
+    {
+      "path": "contracts/verdict_envelope.schema.json",
+      "sha256": "0a1abc9570a723dc157545855450d3afeaa32a0f9b5cd242f3d969f7dfb6028f",
+      "status": "draft-architecture-contract",
+      "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
     }
   ],
   "note": "Contract snapshot only; not runtime-enforced yet.",
