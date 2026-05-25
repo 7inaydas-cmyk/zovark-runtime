@@ -10,8 +10,15 @@ import pytest
 
 jsonschema = pytest.importorskip("jsonschema")
 Draft202012Validator = jsonschema.Draft202012Validator
-RefResolver = jsonschema.validators.RefResolver
 ValidationError = jsonschema.ValidationError
+
+try:
+    from referencing import Registry, Resource
+    from referencing.jsonschema import DRAFT202012
+except Exception:  # pragma: no cover - exercised only on older local jsonschema stacks.
+    Registry = None
+    Resource = None
+    DRAFT202012 = None
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
@@ -53,10 +60,25 @@ def _contract_store() -> dict[str, dict[str, Any]]:
     return schemas
 
 
+def _contract_registry():
+    assert Registry is not None
+    assert Resource is not None
+    assert DRAFT202012 is not None
+
+    registry = Registry()
+    for schema_id, schema in _contract_store().items():
+        resource = Resource.from_contents(schema, default_specification=DRAFT202012)
+        registry = registry.with_resource(schema_id, resource)
+    return registry
+
+
 def _validator(schema_path: Path) -> Draft202012Validator:
     schema = _load_json(schema_path)
     Draft202012Validator.check_schema(schema)
-    resolver = RefResolver.from_schema(schema, store=_contract_store())
+    if Registry is not None:
+        return Draft202012Validator(schema, registry=_contract_registry())
+
+    resolver = jsonschema.validators.RefResolver.from_schema(schema, store=_contract_store())
     return Draft202012Validator(schema, resolver=resolver)
 
 
