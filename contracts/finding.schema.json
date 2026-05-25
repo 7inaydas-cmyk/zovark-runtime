@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/finding/v1.0.0/schema.json",
+  "title": "Finding",
+  "description": "Canonical detection-finding evidence used to construct a verdict envelope. Pinned to OCSF Detection Finding class_uid 2004 per ADR-0033.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "verdict-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "OCSF-1.1",
+      "version": "1.1",
+      "role": "canonical",
+      "license": "Apache-2.0",
+      "source": "https://schema.ocsf.io/"
+    }
+  ],
+  "x-zovark-breaking-change-requires-adr": true,
+  "required": [
+    "finding_id",
+    "tenant_id",
+    "ocsf_class_uid",
+    "ocsf_category_uid",
+    "severity_id",
+    "occurred_at_ns",
+    "source_event_uids"
+  ],
+  "properties": {
+    "finding_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "ocsf_class_uid": {
+      "type": "integer",
+      "const": 2004,
+      "description": "Pinned to OCSF Detection Finding class. Verified by check_ocsf_class_pins.py."
+    },
+    "ocsf_category_uid": {
+      "type": "integer",
+      "const": 2
+    },
+    "severity_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    },
+    "occurred_at_ns": {
+      "type": "integer"
+    },
+    "source_event_uids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "confidence_basis_points": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "campaign_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "actor": {
+      "$ref": "#/$defs/Actor"
+    },
+    "device": {
+      "$ref": "#/$defs/Device"
+    },
+    "zovark_ext": {
+      "type": "object",
+      "description": "Bounded map for registered zovark extension fields only; keys must be registered in zovark_ext_registry.yaml.",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 72,
+        "pattern": "^zovark_[A-Za-z0-9_:-]{1,64}$"
+      },
+      "maxProperties": 16,
+      "additionalProperties": {
+        "$ref": "#/$defs/ZovarkExtensionValue"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "BoundedString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "Actor": {
+      "type": "object",
+      "description": "Bounded actor identity summary; no raw tool output or nested payloads.",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/BoundedString"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "user",
+            "service_account",
+            "process",
+            "host",
+            "unknown"
+          ]
+        },
+        "name": {
+          "$ref": "#/$defs/BoundedString"
+        },
+        "role": {
+          "$ref": "#/$defs/BoundedString"
+        }
+      }
+    },
+    "Device": {
+      "type": "object",
+      "description": "Bounded device identity summary; no raw device telemetry or nested payloads.",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/BoundedString"
+        },
+        "hostname": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 253
+        },
+        "ip": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 45
+        },
+        "mac": {
+          "type": "string",
+          "minLength": 11,
+          "maxLength": 17
+        },
+        "os": {
+          "$ref": "#/$defs/BoundedString"
+        }
+      }
+    },
+    "ZovarkExtensionValue": {
+      "description": "Bounded scalar extension value; nested objects and arrays are not allowed.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        }
+      ]
+    }
+  }
+}

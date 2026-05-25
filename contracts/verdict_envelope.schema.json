@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/verdict_envelope/v1.0.0/schema.json",
+  "title": "Verdict Envelope",
+  "description": "Canonicalized verdict produced by the ASSESS stage. Integer-only confidence; recommended-actions sorted by canonical tuple.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "verdict-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "OCSF-1.1",
+      "version": "1.1",
+      "role": "referenced",
+      "license": "Apache-2.0",
+      "source": "https://schema.ocsf.io/"
+    }
+  ],
+  "x-zovark-breaking-change-requires-adr": true,
+  "required": [
+    "verdict_id",
+    "tenant_id",
+    "investigation_id",
+    "confidence_basis_points",
+    "verdict_class",
+    "recommended_actions",
+    "threshold_version",
+    "policy_snapshot_version"
+  ],
+  "properties": {
+    "verdict_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "investigation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "confidence_basis_points": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "Confidence as integer basis points (0-10000). Float scores are explicitly rejected per INV-018/INV-026."
+    },
+    "verdict_class": {
+      "type": "string",
+      "enum": [
+        "benign",
+        "suspicious",
+        "malicious",
+        "indeterminate"
+      ]
+    },
+    "recommended_actions": {
+      "type": "array",
+      "description": "Sorted canonically by (action_class, target_canonical, confidence_basis_points DESC).",
+      "items": {
+        "$ref": "https://schemas.zovark.io/recommended_action/v1.0.0/schema.json"
+      }
+    },
+    "threshold_version": {
+      "type": "string",
+      "description": "Pinned threshold-set version per ADR-0027"
+    },
+    "policy_snapshot_version": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.zovark.io/finding/v1.0.0/schema.json"
+      }
+    },
+    "produced_at_ns": {
+      "type": "integer"
+    },
+    "zovark_ext": {
+      "type": "object",
+      "description": "Bounded map for registered zovark extension fields only; keys must be registered in zovark_ext_registry.yaml.",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 72,
+        "pattern": "^zovark_[A-Za-z0-9_:-]{1,64}$"
+      },
+      "maxProperties": 16,
+      "additionalProperties": {
+        "$ref": "#/$defs/ZovarkExtensionValue"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ZovarkExtensionValue": {
+      "description": "Bounded scalar extension value; nested objects and arrays are not allowed.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "boolean"
+        }
+      ]
+    }
+  }
+}

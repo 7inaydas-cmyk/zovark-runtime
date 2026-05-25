@@ -16,6 +16,9 @@ No runtime product exists yet.
   `v3.2.5.0-baseline-consolidated`.
 - Copied `scanner_finding_envelope.schema.json` for future synthetic alert
   fixture validation. It is not runtime-enforced yet.
+- Copied verdict schema set (`verdict_envelope.schema.json`,
+  `recommended_action.schema.json`, and `finding.schema.json`) for future
+  verdict fixture validation. It is not runtime-enforced yet.
 - Architecture baseline inventory: 25 binding ADRs plus ADR-0043
   proposed/pending founder sign-off, 39 invariants, 23 authoritative schemas,
   and replay compatibility contract `architecture/replay-compatibility.yaml`.

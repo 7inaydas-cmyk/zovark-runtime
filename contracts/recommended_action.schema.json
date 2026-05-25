@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/recommended_action/v1.0.0/schema.json",
+  "title": "Recommended Action",
+  "description": "A canonical recommended action emitted in a verdict envelope. Reversible per ADR-0021/ADR-0028.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "verdict-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-standards-attribution": [
+    {
+      "standard": "OCSF-1.1",
+      "version": "1.1",
+      "role": "referenced",
+      "license": "Apache-2.0",
+      "source": "https://schema.ocsf.io/"
+    }
+  ],
+  "x-zovark-breaking-change-requires-adr": true,
+  "required": [
+    "action_id",
+    "action_class",
+    "target_canonical",
+    "confidence_basis_points",
+    "reversible",
+    "authorization_token"
+  ],
+  "properties": {
+    "action_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "action_class": {
+      "type": "string",
+      "enum": [
+        "isolate_host",
+        "kill_process",
+        "block_network",
+        "quarantine_file",
+        "revoke_session",
+        "no_op"
+      ]
+    },
+    "target_canonical": {
+      "type": "string",
+      "description": "Canonical target identifier (e.g., host:<uuid>, process:<pid>:<host_uuid>)"
+    },
+    "confidence_basis_points": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "reversible": {
+      "type": "boolean",
+      "const": true
+    },
+    "authorization_token": {
+      "type": "string",
+      "description": "Ed25519-signed per-action authorization per ADR-0028. Replay-protected."
+    },
+    "expires_at_ns": {
+      "type": "integer"
+    },
+    "vendor_adapter": {
+      "type": "string",
+      "description": "Outbound adapter to dispatch to (e.g., 'wazuh', 'crowdstrike')"
+    },
+    "rationale": {
+      "type": "string",
+      "maxLength": 1024
+    }
+  },
+  "additionalProperties": false
+}
