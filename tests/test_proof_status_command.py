@@ -21,15 +21,16 @@ def test_cli_proof_status_reports_architecture_baseline(capsys) -> None:
     assert payload["report"] == "local proof status"
     assert payload["runtime_proof_loop"] == "incomplete"
     assert payload["architecture_baseline"] == {
-        "source_tag": "v3.2.5.0-baseline-consolidated",
-        "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
+        "source_ref": "main",
+        "source_tag": None,
+        "source_commit": "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61",
     }
     assert payload["baseline_inventory"] == {
         "adr_files": 26,
         "binding_adrs": 25,
         "proposed_pending_adrs": ["ADR-0043"],
         "invariants": 39,
-        "authoritative_schemas": 23,
+        "authoritative_schemas": 25,
         "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
     }
 

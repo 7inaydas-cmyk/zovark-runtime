@@ -12,15 +12,19 @@ No runtime product exists yet.
 ## What Exists
 
 - Contract snapshot copied from
-  `7inaydas-cmyk/zovark-architecture` at tag
-  `v3.2.5.0-baseline-consolidated`.
+  `7inaydas-cmyk/zovark-architecture` at main commit
+  `fa58bb16cf0e3209ba8c3310eabbac40f95b6b61`. No tag currently contains the
+  PR #54 VerdictInput/ReplayRecord contracts.
 - Copied `scanner_finding_envelope.schema.json` for future synthetic alert
   fixture validation. It is not runtime-enforced yet.
 - Copied verdict schema set (`verdict_envelope.schema.json`,
   `recommended_action.schema.json`, and `finding.schema.json`) for future
   verdict fixture validation. It is not runtime-enforced yet.
+- Copied `verdict_input.schema.json` and `replay_record.schema.json` for
+  future deterministic verdict/replay fixture validation. They are not
+  runtime-enforced yet.
 - Architecture baseline inventory: 25 binding ADRs plus ADR-0043
-  proposed/pending founder sign-off, 39 invariants, 23 authoritative schemas,
+  proposed/pending founder sign-off, 39 invariants, 25 authoritative schemas,
   and replay compatibility contract `architecture/replay-compatibility.yaml`.
 - Phase 0 invariants for proof, Replay, and Context Compaction Memory.
 - Feature lifecycle placeholders for planned runtime work.

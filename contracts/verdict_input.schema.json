@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/verdict_input/v1.0.0/schema.json",
+  "title": "Verdict Input",
+  "description": "Canonical bounded input to deterministic verdict derivation. This contract captures ADR-0046 input authority only; it does not claim runtime derive_verdict implementation or enforcement.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "verdict-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-breaking-change-requires-adr": true,
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tenant_id",
+    "investigation_id",
+    "logical_clock",
+    "alert_envelope",
+    "tenant_config",
+    "tool_catalog_version",
+    "tool_results",
+    "llm_records",
+    "db_results",
+    "model_version",
+    "decoding_params",
+    "prompt_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "investigation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "logical_clock": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Approved monotonic logical clock value. Wall-clock time is not a verdict derivation input."
+    },
+    "alert_envelope": {
+      "$ref": "https://schemas.zovark.io/scanner_finding_envelope/v1.0.0/schema.json"
+    },
+    "tenant_config": {
+      "$ref": "#/$defs/TenantConfig"
+    },
+    "tool_catalog_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "tool_results": {
+      "type": "array",
+      "description": "Canonical tool results sorted by (tool_call_id, sequence_number). Raw tool output is excluded; only bounded summaries and hashes are allowed.",
+      "x-zovark-sort-key": [
+        "tool_call_id",
+        "sequence_number"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/ToolResult"
+      }
+    },
+    "llm_records": {
+      "type": "array",
+      "description": "Canonical model-visible LLM records sorted by (call_id, sequence_number). Raw prompts and hidden reasoning are excluded; model-visible output is bounded and hashed.",
+      "x-zovark-sort-key": [
+        "call_id",
+        "sequence_number"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/LLMRecord"
+      }
+    },
+    "db_results": {
+      "type": "array",
+      "description": "Canonical database result summaries sorted by (query_id, row_canonical_hash). Raw rows are excluded; deterministic result-set hashes are required.",
+      "x-zovark-sort-key": [
+        "query_id",
+        "row_canonical_hash"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/DBResult"
+      }
+    },
+    "model_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "decoding_params": {
+      "$ref": "#/$defs/CanonicalDecodingParams"
+    },
+    "prompt_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    }
+  },
+  "$defs": {
+    "ActionClass": {
+      "type": "string",
+      "enum": [
+        "isolate_host",
+        "kill_process",
+        "block_network",
+        "quarantine_file",
+        "revoke_session",
+        "no_op"
+      ]
+    },
+    "BoundedIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "BoundedSummary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "CanonicalDecodingParams": {
+      "type": "object",
+      "description": "Integer-only bounded decoding parameters. Random seeds are not accepted as verdict inputs.",
+      "additionalProperties": false,
+      "required": [
+        "temperature_basis_points",
+        "top_p_basis_points",
+        "max_output_tokens",
+        "seed_policy"
+      ],
+      "properties": {
+        "temperature_basis_points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "top_p_basis_points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "seed_policy": {
+          "type": "string",
+          "const": "no_seed"
+        }
+      }
+    },
+    "DBResult": {
+      "type": "object",
+      "description": "Bounded canonical database result summary. Query output must be total-order canonicalized before hashing; unsorted DB rows are not accepted.",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "row_canonical_hash",
+        "result_set_hash",
+        "row_count",
+        "schema_version"
+      ],
+      "properties": {
+        "query_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "row_canonical_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "result_set_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "schema_version": {
+          "$ref": "#/$defs/VersionString"
+        }
+      }
+    },
+    "LLMRecord": {
+      "type": "object",
+      "description": "Bounded canonical LLM record. It carries model-visible output only, excludes hidden reasoning and raw prompt payloads, and binds both input and output by hash.",
+      "additionalProperties": false,
+      "required": [
+        "call_id",
+        "sequence_number",
+        "model_id",
+        "model_version",
+        "decoding_params",
+        "prompt_hash",
+        "model_visible_input_hash",
+        "model_visible_output",
+        "model_visible_output_hash"
+      ],
+      "properties": {
+        "call_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "model_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "decoding_params": {
+          "$ref": "#/$defs/CanonicalDecodingParams"
+        },
+        "prompt_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "model_visible_input_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "model_visible_output": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192,
+          "description": "Canonical bounded model-visible output captured at investigation time. Hidden reasoning and raw prompt payloads are not accepted."
+        },
+        "model_visible_output_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        }
+      }
+    },
+    "Sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "TenantConfig": {
+      "type": "object",
+      "description": "Bounded tenant policy snapshot required for deterministic verdict derivation.",
+      "additionalProperties": false,
+      "required": [
+        "config_version",
+        "policy_snapshot_version",
+        "allowed_action_classes",
+        "blocked_action_classes",
+        "policy_hash"
+      ],
+      "properties": {
+        "config_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "policy_snapshot_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "allowed_action_classes": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ActionClass"
+          }
+        },
+        "blocked_action_classes": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ActionClass"
+          }
+        },
+        "policy_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        }
+      }
+    },
+    "ToolResult": {
+      "type": "object",
+      "description": "Bounded canonical tool result. Raw tool output, network I/O handles, and filesystem metadata are not accepted.",
+      "additionalProperties": false,
+      "required": [
+        "tool_call_id",
+        "sequence_number",
+        "tool_name",
+        "tool_version",
+        "status",
+        "input_hash",
+        "output_hash",
+        "canonical_summary"
+      ],
+      "properties": {
+        "tool_call_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_name": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "tool_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure",
+            "skipped"
+          ]
+        },
+        "input_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "output_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "canonical_summary": {
+          "$ref": "#/$defs/BoundedSummary"
+        }
+      }
+    },
+    "VersionString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:+-]+$"
+    }
+  }
+}
