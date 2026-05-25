@@ -8,6 +8,7 @@ import pytest
 
 jsonschema = pytest.importorskip("jsonschema")
 Draft202012Validator = jsonschema.Draft202012Validator
+RefResolver = jsonschema.validators.RefResolver
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,3 +61,39 @@ def test_verdict_schema_refs_resolve_to_local_contracts() -> None:
             missing_refs.append(ref)
 
     assert not missing_refs
+
+    verdict = {
+        "verdict_id": "11111111-1111-4111-8111-111111111111",
+        "tenant_id": "22222222-2222-4222-8222-222222222222",
+        "investigation_id": "33333333-3333-4333-8333-333333333333",
+        "confidence_basis_points": 6500,
+        "verdict_class": "suspicious",
+        "recommended_actions": [
+            {
+                "action_id": "44444444-4444-4444-8444-444444444444",
+                "action_class": "no_op",
+                "target_canonical": "host:33333333-3333-4333-8333-333333333333",
+                "confidence_basis_points": 6500,
+                "reversible": True,
+                "authorization_token": "synthetic-authorization-token",
+            }
+        ],
+        "threshold_version": "synthetic-thresholds-1.0.0",
+        "policy_snapshot_version": "synthetic-policy-1.0.0",
+        "evidence": [
+            {
+                "finding_id": "55555555-5555-4555-8555-555555555555",
+                "tenant_id": "22222222-2222-4222-8222-222222222222",
+                "ocsf_class_uid": 2004,
+                "ocsf_category_uid": 2,
+                "severity_id": 3,
+                "occurred_at_ns": 1700000000000000000,
+                "source_event_uids": ["synthetic-event-001"],
+                "confidence_basis_points": 6500,
+            }
+        ],
+    }
+
+    verdict_schema = load_contract_schema(VERDICT_SCHEMA)
+    resolver = RefResolver.from_schema(verdict_schema, store=schemas_by_id)
+    Draft202012Validator(verdict_schema, resolver=resolver).validate(verdict)
