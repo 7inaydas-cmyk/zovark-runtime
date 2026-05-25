@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.0.0",
+  "record_format_version": "1.0.0",
+  "investigation_id": "33333333-3333-4333-8333-333333333333",
+  "tenant_id": "22222222-2222-4222-8222-222222222222",
+  "captured_logical_clock": 7,
+  "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
+  "failure_policy": "fail_closed",
+  "tool_catalog_version": "synthetic-tool-catalog-1.0.0",
+  "model_id": "synthetic-model",
+  "model_version": "1.0.0",
+  "decoding_params": {
+    "temperature_basis_points": 0,
+    "top_p_basis_points": 10000,
+    "max_output_tokens": 512,
+    "seed_policy": "no_seed"
+  },
+  "prompt_hashes": [
+    "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  ],
+  "verdict_input": {
+    "schema_version": "1.0.0",
+    "tenant_id": "22222222-2222-4222-8222-222222222222",
+    "investigation_id": "33333333-3333-4333-8333-333333333333",
+    "logical_clock": 7,
+    "alert_envelope": {
+      "envelope_id": "11111111-1111-4111-8111-111111111111",
+      "tenant_id": "22222222-2222-4222-8222-222222222222",
+      "received_at_ns": 1700000000000000000,
+      "scanner_type": "edr",
+      "scanner_version": "1.0.0",
+      "ocsf_class": 4002,
+      "raw_finding": {
+        "source_finding_id": "synthetic-finding-001",
+        "source_event_uid": "synthetic-event-001",
+        "title": "Synthetic suspicious process observation",
+        "description": "Synthetic bounded finding for local contract validation only.",
+        "severity": "medium",
+        "observed_at_ns": 1700000000000000000
+      },
+      "normalized_finding": {
+        "ocsf_class_uid": 4002,
+        "category_uid": 4,
+        "type_uid": 400201,
+        "activity_id": 1,
+        "severity_id": 3,
+        "finding_uid": "synthetic-finding-001"
+      },
+      "ingest_provenance": {
+        "adapter": "synthetic",
+        "adapter_version": "1.0.0"
+      }
+    },
+    "tenant_config": {
+      "config_version": "1.0.0",
+      "policy_snapshot_version": "synthetic-policy-1.0.0",
+      "allowed_action_classes": [
+        "no_op"
+      ],
+      "blocked_action_classes": [],
+      "policy_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "tool_catalog_version": "synthetic-tool-catalog-1.0.0",
+    "tool_results": [
+      {
+        "tool_call_id": "tool-call-001",
+        "sequence_number": 0,
+        "tool_name": "synthetic.tool",
+        "tool_version": "1.0.0",
+        "status": "success",
+        "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "output_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "canonical_summary": "Synthetic bounded tool summary for fixture validation."
+      }
+    ],
+    "llm_records": [
+      {
+        "call_id": "llm-call-001",
+        "sequence_number": 0,
+        "model_id": "synthetic-model",
+        "model_version": "1.0.0",
+        "decoding_params": {
+          "temperature_basis_points": 0,
+          "top_p_basis_points": 10000,
+          "max_output_tokens": 512,
+          "seed_policy": "no_seed"
+        },
+        "prompt_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "model_visible_input_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "model_visible_output": "Synthetic bounded model-visible result for fixture validation.",
+        "model_visible_output_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      }
+    ],
+    "db_results": [
+      {
+        "query_id": "db-query-001",
+        "row_canonical_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "result_set_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+        "row_count": 1,
+        "schema_version": "1.0.0"
+      }
+    ],
+    "model_version": "1.0.0",
+    "decoding_params": {
+      "temperature_basis_points": 0,
+      "top_p_basis_points": 10000,
+      "max_output_tokens": 512,
+      "seed_policy": "no_seed"
+    },
+    "prompt_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "verdict_input_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+  "llm_io": [],
+  "tool_io": [],
+  "db_snapshots": [],
+  "verdict_envelope_hash": "4444444444444444444444444444444444444444444444444444444444444444"
+}
