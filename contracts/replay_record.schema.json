@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/replay_record/v1.0.0/schema.json",
+  "title": "Replay Record",
+  "description": "Canonical bounded replay record for deterministic replay proof. Replay uses recorded model-visible I/O, provenance, hashes, and captured verdict input; it does not re-inference.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "replay-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-breaking-change-requires-adr": true,
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_format_version",
+    "investigation_id",
+    "tenant_id",
+    "captured_logical_clock",
+    "replay_compatibility_contract",
+    "failure_policy",
+    "tool_catalog_version",
+    "model_id",
+    "model_version",
+    "decoding_params",
+    "prompt_hashes",
+    "verdict_input",
+    "verdict_input_hash",
+    "llm_io",
+    "tool_io",
+    "db_snapshots",
+    "verdict_envelope_hash"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "record_format_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "investigation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "captured_logical_clock": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Capture position expressed as an approved logical clock. Wall-clock capture time is metadata outside verdict derivation."
+    },
+    "replay_compatibility_contract": {
+      "type": "string",
+      "const": "architecture/replay-compatibility.yaml"
+    },
+    "failure_policy": {
+      "type": "string",
+      "const": "fail_closed"
+    },
+    "tool_catalog_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "model_id": {
+      "$ref": "#/$defs/BoundedIdentifier"
+    },
+    "model_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "decoding_params": {
+      "$ref": "#/$defs/CanonicalDecodingParams"
+    },
+    "prompt_hashes": {
+      "type": "array",
+      "description": "Canonical prompt hashes captured at investigation time. Prompt bodies are not stored in this replay contract.",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/Sha256Hex"
+      }
+    },
+    "verdict_input": {
+      "$ref": "https://schemas.zovark.io/verdict_input/v1.0.0/schema.json"
+    },
+    "verdict_input_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    },
+    "llm_io": {
+      "type": "array",
+      "description": "Canonical recorded LLM I/O sorted by (call_id, sequence_number). Replay uses these records and never re-inferences.",
+      "x-zovark-sort-key": [
+        "call_id",
+        "sequence_number"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/ReplayLLMIORecord"
+      }
+    },
+    "tool_io": {
+      "type": "array",
+      "description": "Canonical recorded tool I/O sorted by (tool_call_id, sequence_number). Replay fails closed if the recorded tool catalog is incompatible.",
+      "x-zovark-sort-key": [
+        "tool_call_id",
+        "sequence_number"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/ReplayToolIORecord"
+      }
+    },
+    "db_snapshots": {
+      "type": "array",
+      "description": "Canonical database snapshots sorted by (query_id, snapshot_hash). Raw rows are excluded.",
+      "x-zovark-sort-key": [
+        "query_id",
+        "snapshot_hash"
+      ],
+      "maxItems": 128,
+      "items": {
+        "$ref": "#/$defs/DBSnapshot"
+      }
+    },
+    "verdict_envelope_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    },
+    "structured_failure_codes": {
+      "type": "array",
+      "description": "Replay failure codes permitted by the committed replay compatibility contract.",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "REPLAY_TOOL_RETIRED",
+          "REPLAY_SCHEMA_INCOMPATIBLE"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "BoundedIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "CanonicalDecodingParams": {
+      "type": "object",
+      "description": "Integer-only bounded decoding parameters recorded for provenance and compatibility checks.",
+      "additionalProperties": false,
+      "required": [
+        "temperature_basis_points",
+        "top_p_basis_points",
+        "max_output_tokens",
+        "seed_policy"
+      ],
+      "properties": {
+        "temperature_basis_points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "top_p_basis_points": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32768
+        },
+        "seed_policy": {
+          "type": "string",
+          "const": "no_seed"
+        }
+      }
+    },
+    "DBSnapshot": {
+      "type": "object",
+      "description": "Bounded canonical database snapshot summary. Raw rows are not accepted.",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "schema_version",
+        "row_count",
+        "result_set_hash",
+        "snapshot_hash"
+      ],
+      "properties": {
+        "query_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "schema_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "result_set_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "snapshot_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        }
+      }
+    },
+    "ReplayLLMIORecord": {
+      "type": "object",
+      "description": "Bounded canonical LLM I/O captured at investigation time. It stores model-visible output for replay, never hidden reasoning or raw prompts.",
+      "additionalProperties": false,
+      "required": [
+        "call_id",
+        "sequence_number",
+        "model_id",
+        "model_version",
+        "prompt_hash",
+        "model_visible_input_hash",
+        "model_visible_output",
+        "model_visible_output_hash"
+      ],
+      "properties": {
+        "call_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "model_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "prompt_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "model_visible_input_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "model_visible_output": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "model_visible_output_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        }
+      }
+    },
+    "ReplayToolIORecord": {
+      "type": "object",
+      "description": "Bounded canonical tool I/O captured at investigation time. Raw tool output is not accepted.",
+      "additionalProperties": false,
+      "required": [
+        "tool_call_id",
+        "sequence_number",
+        "tool_name",
+        "tool_version",
+        "input_hash",
+        "output_hash",
+        "status",
+        "canonical_summary"
+      ],
+      "properties": {
+        "tool_call_id": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tool_name": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "tool_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "input_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "output_hash": {
+          "$ref": "#/$defs/Sha256Hex"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure",
+            "skipped"
+          ]
+        },
+        "canonical_summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "Sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "VersionString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:+-]+$"
+    }
+  }
+}

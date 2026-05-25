@@ -14,6 +14,8 @@ RefResolver = jsonschema.validators.RefResolver
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
 VERDICT_SCHEMA = CONTRACTS / "verdict_envelope.schema.json"
+VERDICT_INPUT_SCHEMA = CONTRACTS / "verdict_input.schema.json"
+REPLAY_RECORD_SCHEMA = CONTRACTS / "replay_record.schema.json"
 
 
 def load_contract_schema(schema_path: Path) -> dict:
@@ -35,16 +37,19 @@ def iter_refs(node: object):
 def test_contract_schemas_validate_against_draft_2020_12_metaschema() -> None:
     schema_paths = sorted(CONTRACTS.glob("*.schema.json"))
 
+    assert len(schema_paths) == 9
     assert CONTRACTS / "scanner_finding_envelope.schema.json" in schema_paths
     assert CONTRACTS / "finding.schema.json" in schema_paths
     assert CONTRACTS / "recommended_action.schema.json" in schema_paths
     assert VERDICT_SCHEMA in schema_paths
+    assert VERDICT_INPUT_SCHEMA in schema_paths
+    assert REPLAY_RECORD_SCHEMA in schema_paths
 
     for schema_path in schema_paths:
         Draft202012Validator.check_schema(load_contract_schema(schema_path))
 
 
-def test_verdict_schema_refs_resolve_to_local_contracts() -> None:
+def test_contract_schema_refs_resolve_to_local_contracts() -> None:
     schemas_by_id = {}
     for schema_path in sorted(CONTRACTS.glob("*.schema.json")):
         schema = load_contract_schema(schema_path)
@@ -53,12 +58,17 @@ def test_verdict_schema_refs_resolve_to_local_contracts() -> None:
             schemas_by_id[schema_id.split("#", 1)[0]] = schema
 
     missing_refs = []
-    for ref in iter_refs(load_contract_schema(VERDICT_SCHEMA)):
-        if ref.startswith("#"):
-            continue
-        base_ref = ref.split("#", 1)[0]
-        if base_ref not in schemas_by_id:
-            missing_refs.append(ref)
+    for schema_path in [VERDICT_SCHEMA, VERDICT_INPUT_SCHEMA, REPLAY_RECORD_SCHEMA]:
+        schema = load_contract_schema(schema_path)
+        resolver = RefResolver.from_schema(schema, store=schemas_by_id)
+        for ref in iter_refs(schema):
+            if ref.startswith("#"):
+                continue
+            base_ref = ref.split("#", 1)[0]
+            if base_ref not in schemas_by_id:
+                missing_refs.append(ref)
+                continue
+            resolver.resolve(ref)
 
     assert not missing_refs
 

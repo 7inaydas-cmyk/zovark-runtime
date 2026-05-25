@@ -17,7 +17,7 @@ BASELINE_INVENTORY = {
     "binding_adrs": 25,
     "proposed_pending_adrs": ["ADR-0043"],
     "invariants": 39,
-    "authoritative_schemas": 23,
+    "authoritative_schemas": 25,
     "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
 }
 
@@ -126,14 +126,15 @@ def pytest_availability() -> dict[str, str]:
     }
 
 
-def read_architecture_baseline(root: Path) -> tuple[dict[str, str], bool]:
+def read_architecture_baseline(root: Path) -> tuple[dict[str, object], bool]:
     manifest_path = root / "contracts" / "contract-manifest.json"
     rel_path = "contracts/contract-manifest.json"
 
     try:
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         return {
-            "source_tag": str(manifest["source_tag"]),
+            "source_ref": str(manifest.get("source_ref", "unknown")),
+            "source_tag": manifest.get("source_tag"),
             "source_commit": str(manifest["source_commit"]),
         }, True
     except FileNotFoundError:

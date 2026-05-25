@@ -31,6 +31,12 @@
       "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
     },
     {
+      "path": "contracts/replay_record.schema.json",
+      "sha256": "7c26eb44e37dbefd667bd7e4df3a0afd3f43c812ab7061868184cbd7a4e6994e",
+      "status": "draft-architecture-contract",
+      "note": "Copied from zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61 after PR #54; canonical verdict/replay proof contract for future fixture validation. Not runtime-enforced yet."
+    },
+    {
       "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical scanner/finding envelope contract for future synthetic alert fixture validation. Not runtime-enforced yet.",
       "path": "contracts/scanner_finding_envelope.schema.json",
       "sha256": "a66d934f1650adfcff06d60b3d9d6c24d1765fad03318fb4c278f4975ffa1b6c",
@@ -41,11 +47,18 @@
       "sha256": "0a1abc9570a723dc157545855450d3afeaa32a0f9b5cd242f3d969f7dfb6028f",
       "status": "draft-architecture-contract",
       "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
+    },
+    {
+      "path": "contracts/verdict_input.schema.json",
+      "sha256": "98091dc6e746637765867e94ed4ffe593b348f58a6bd321b4f603f99bedc6601",
+      "status": "draft-architecture-contract",
+      "note": "Copied from zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61 after PR #54; canonical verdict/replay proof contract for future fixture validation. Not runtime-enforced yet."
     }
   ],
-  "note": "Contract snapshot only; not runtime-enforced yet.",
-  "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
+  "note": "Contract snapshot only; not runtime-enforced yet. Current snapshot is pinned to zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61; no tag contains the PR #54 contracts yet.",
+  "source_commit": "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61",
   "source_repo": "https://github.com/7inaydas-cmyk/zovark-architecture",
-  "source_tag": "v3.2.5.0-baseline-consolidated",
-  "status": "draft-architecture-contract"
+  "source_tag": null,
+  "status": "draft-architecture-contract",
+  "source_ref": "main"
 }
