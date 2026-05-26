@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -20,7 +21,16 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "DETERMINISTIC_VERDICT_DERIVATION_OK",
     "REPLAY_VALIDATION_PROOF_OK",
     "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
+    "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
     "CONTRACT_METASCHEMA_OK",
+}
+
+ARCHITECTURE_SOURCE_COMMIT = "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61"
+REPLAY_COMPATIBILITY_YAML = "contracts/replay-compatibility.yaml"
+REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
+REPLAY_COMPATIBILITY_SOURCE_HASHES = {
+    REPLAY_COMPATIBILITY_YAML: "6be9b34ac35dffde387acb46abfefe2bd7a94ffcf8512c28585f6648b4040e98",
+    REPLAY_COMPATIBILITY_SCHEMA: "c5b0f03ae238a3fe34e63e094c4112e1fffb4187b217d85d94ace01e4fabcbb1",
 }
 
 
@@ -42,6 +52,10 @@ def _item_by_marker(checklist: list[dict[str, object]], marker: str) -> dict[str
 
 def _assert_repo_file_exists(rel_path: str) -> None:
     assert (ROOT / rel_path).is_file(), rel_path
+
+
+def _sha256(rel_path: str) -> str:
+    return hashlib.sha256((ROOT / rel_path).read_bytes()).hexdigest()
 
 
 def _run_cli(args: list[str], capsys) -> dict[str, object]:
@@ -118,12 +132,18 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
                 "runtime_artifact_paths",
                 "contract_paths",
                 "fixture_paths",
+                "yaml_artifact_path",
+                "schema_artifact_path",
                 "expected_count",
             }
             assert any(item.get(key) for key in evidence_keys)
 
             if "test_file_path" in item:
                 _assert_repo_file_exists(item["test_file_path"])
+            if "yaml_artifact_path" in item:
+                _assert_repo_file_exists(item["yaml_artifact_path"])
+            if "schema_artifact_path" in item:
+                _assert_repo_file_exists(item["schema_artifact_path"])
             for rel_path in item.get("runtime_artifact_paths", []):
                 _assert_repo_file_exists(rel_path)
             for rel_path in item.get("contract_paths", []):
@@ -144,6 +164,29 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
 
     fail_closed_item = _item_by_marker(checklist, "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK")
     assert fail_closed_item["expected_count"]["value"] == len(_load_replay_validation_fail_closed_cases())
+
+    replay_compatibility_item = _item_by_marker(checklist, "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK")
+    assert replay_compatibility_item["test_file_path"] == "tests/test_replay_compatibility_contract.py"
+    assert replay_compatibility_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    assert replay_compatibility_item["schema_artifact_path"] == REPLAY_COMPATIBILITY_SCHEMA
+    assert replay_compatibility_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
+    assert replay_compatibility_item["source_hashes"] == REPLAY_COMPATIBILITY_SOURCE_HASHES
+    for rel_path, expected_hash in REPLAY_COMPATIBILITY_SOURCE_HASHES.items():
+        _assert_repo_file_exists(rel_path)
+        assert _sha256(rel_path) == expected_hash
+
+    coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
+    assert coverage_item["status"] == "deferred"
+    assert "coverage" in coverage_item["deferred_reason"]
+    assert "ADR-0047" in coverage_item["architecture_authority"]
+    assert "INV-036" in coverage_item["architecture_authority"]
+    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
+
+    failure_record_item = next(item for item in checklist if item["id"] == "canonical_replay_failure_record_alignment")
+    assert failure_record_item["status"] == "deferred"
+    assert "ADR-0047" in failure_record_item["architecture_authority"]
+    assert "INV-036" in failure_record_item["architecture_authority"]
+    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in failure_record_item["architecture_authority"]
 
     print("PROOF_CHAIN_CHECKLIST_OK")
 

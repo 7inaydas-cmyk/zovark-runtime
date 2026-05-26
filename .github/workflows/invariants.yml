@@ -17,5 +17,5 @@ jobs:
       - run: python scripts/check_contract_manifest.py
       - run: python scripts/check_invariants.py
       - run: python scripts/check_no_unbounded_model_context.py
-      - run: python -m pip install pytest jsonschema
+      - run: python -m pip install pytest jsonschema PyYAML==6.0.2
       - run: python -m pytest tests/ -q

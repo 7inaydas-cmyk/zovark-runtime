@@ -1,0 +1,34 @@
+schema_version: "1.0.0"
+record_schema:
+  "1.0.0":
+    replayable_under:
+      - "1.0.x"
+    migration_required: false
+    notes: "Initial consolidated replay record compatibility range."
+tool_catalog:
+  "1.0.0":
+    replayable_under:
+      - "1.0.x"
+    removed_tools: []
+    added_tools_after_v1.0.0: []
+    notes: "Initial consolidated tool catalog compatibility range."
+adapter_catalog:
+  "1.0.0":
+    replayable_under:
+      - "1.0.x"
+    breaking_changes: []
+    notes: "Initial consolidated adapter catalog compatibility range."
+model_artifacts:
+  replay_modes:
+    mode_1_recorded_io_only:
+      model_digest_required: false
+      model_digest_recorded_for_provenance: true
+      notes: "Recorded I/O replay does not require model artifact availability."
+    mode_2_forensic_reexecution:
+      model_digest_required: true
+      historical_runtime_container_required: true
+      notes: "Forensic re-execution is future-scoped and requires historical runtime artifacts."
+structured_failure_codes:
+  - REPLAY_TOOL_RETIRED
+  - REPLAY_SCHEMA_INCOMPATIBLE
+historical_catalogs_root: "architecture/replay/catalogs"
