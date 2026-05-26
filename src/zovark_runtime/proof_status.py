@@ -43,6 +43,14 @@ INCOMPLETE_REASON = [
     "readiness/product/production claims are not made",
 ]
 
+PROOF_CHAIN_CHECKLIST_SCOPE = {
+    "reporting_role": "declarative status explanation",
+    "completion_definition": "not-defined-by-runtime",
+    "completion_authority": "architecture-owned or undefined until explicitly specified",
+    "completion_claim": "not-claimed",
+    "proof_execution": "not-run-by-proof-status",
+}
+
 PROOF_CHAIN_CHECKLIST = [
     {
         "id": "scanner_fixture_schema_proof",
@@ -126,7 +134,7 @@ PROOF_CHAIN_CHECKLIST = [
         "runtime_artifact_paths": ["src/zovark_runtime/replay_validation.py"],
         "expected_count": {
             "name": "replay_validation_fail_closed_cases",
-            "value": 8,
+            "value": 9,
             "source": "tests/test_replay_validation.py::REPLAY_VALIDATION_FAIL_CLOSED_CASES",
         },
     },
@@ -348,6 +356,7 @@ def build_proof_status(
         "report": "local proof status",
         "runtime_proof_loop": "incomplete",
         "incomplete_reason": INCOMPLETE_REASON,
+        "proof_chain_checklist_scope": PROOF_CHAIN_CHECKLIST_SCOPE,
         "proof_chain_checklist": PROOF_CHAIN_CHECKLIST,
         "architecture_baseline": architecture_baseline,
         "baseline_inventory": BASELINE_INVENTORY,

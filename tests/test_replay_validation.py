@@ -79,6 +79,12 @@ REPLAY_VALIDATION_FAIL_CLOSED_CASES = (
         "expected_code": MODEL_VERSION_MISMATCH,
     },
     {
+        "id": "prompt_hash_empty",
+        "field_name": "prompt_hashes",
+        "value": [],
+        "expected_code": PROMPT_HASH_MISMATCH,
+    },
+    {
         "id": "prompt_hash_mismatch",
         "field_name": "prompt_hashes",
         "value": ["0" * 64],

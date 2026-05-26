@@ -88,6 +88,14 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert payload["incomplete_reason"]
     assert isinstance(payload["incomplete_reason"], list)
 
+    assert payload["proof_chain_checklist_scope"] == {
+        "reporting_role": "declarative status explanation",
+        "completion_definition": "not-defined-by-runtime",
+        "completion_authority": "architecture-owned or undefined until explicitly specified",
+        "completion_claim": "not-claimed",
+        "proof_execution": "not-run-by-proof-status",
+    }
+
     checklist = payload["proof_chain_checklist"]
     assert checklist
 
