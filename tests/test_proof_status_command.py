@@ -27,6 +27,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
     "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
     "REPLAY_FAILURE_RECORD_EMISSION_OK",
+    "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
     "CONTRACT_METASCHEMA_OK",
 }
 
@@ -38,6 +39,7 @@ REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
 REPLAY_FAILURE_RECORD_FIXTURE = "tests/fixtures/replay_failure_record_minimal.json"
 REPLAY_FAILURE_MAPPING_MODULE = "src/zovark_runtime/replay_failure_mapping.py"
 REPLAY_FAILURE_RECORDING_MODULE = "src/zovark_runtime/replay_failure_recording.py"
+REPLAY_COMPATIBILITY_MAPPING_MODULE = "src/zovark_runtime/replay_compatibility_mapping.py"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
     REPLAY_COMPATIBILITY_YAML: "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
     REPLAY_COMPATIBILITY_SCHEMA: "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
@@ -230,16 +232,27 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert replay_failure_recording_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
     _assert_repo_file_exists(REPLAY_FAILURE_RECORDING_MODULE)
 
-    coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
+    replay_compatibility_mapping_item = _item_by_marker(checklist, "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK")
+    assert replay_compatibility_mapping_item["test_file_path"] == "tests/test_replay_compatibility_mapping.py"
+    assert replay_compatibility_mapping_item["runtime_artifact_paths"] == [
+        REPLAY_COMPATIBILITY_MAPPING_MODULE,
+        REPLAY_FAILURE_RECORDING_MODULE,
+    ]
+    assert replay_compatibility_mapping_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    assert replay_compatibility_mapping_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    _assert_repo_file_exists(REPLAY_COMPATIBILITY_MAPPING_MODULE)
+
+    coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_claim")
     assert coverage_item["status"] == "deferred"
     assert "coverage" in coverage_item["deferred_reason"]
-    assert "row/outcome semantics are imported" in coverage_item["deferred_reason"]
+    assert "matrix-row mapping is proven" in coverage_item["deferred_reason"]
+    assert "do not cover all architecture rows" in coverage_item["deferred_reason"]
     assert "ADR-0047" in coverage_item["architecture_authority"]
     assert "INV-036" in coverage_item["architecture_authority"]
     assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57" in coverage_item["architecture_authority"]
-    assert "matrix-row mapping proof" in coverage_item["authority_required"]
+    assert "cover every architecture-defined row" in coverage_item["authority_required"]
 
     assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)
 
