@@ -25,6 +25,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_FAILURE_RECORD_SCHEMA_OK",
     "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
     "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
+    "REPLAY_FAILURE_RECORD_EMISSION_OK",
     "CONTRACT_METASCHEMA_OK",
 }
 
@@ -34,6 +35,7 @@ REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
 REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
 REPLAY_FAILURE_RECORD_FIXTURE = "tests/fixtures/replay_failure_record_minimal.json"
 REPLAY_FAILURE_MAPPING_MODULE = "src/zovark_runtime/replay_failure_mapping.py"
+REPLAY_FAILURE_RECORDING_MODULE = "src/zovark_runtime/replay_failure_recording.py"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
     REPLAY_COMPATIBILITY_YAML: "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
     REPLAY_COMPATIBILITY_SCHEMA: "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
@@ -207,6 +209,15 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert replay_failure_mapping_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
     _assert_repo_file_exists(REPLAY_FAILURE_MAPPING_MODULE)
 
+    replay_failure_recording_item = _item_by_marker(checklist, "REPLAY_FAILURE_RECORD_EMISSION_OK")
+    assert replay_failure_recording_item["test_file_path"] == "tests/test_replay_failure_recording.py"
+    assert replay_failure_recording_item["runtime_artifact_paths"] == [
+        REPLAY_FAILURE_RECORDING_MODULE,
+        REPLAY_FAILURE_MAPPING_MODULE,
+    ]
+    assert replay_failure_recording_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    _assert_repo_file_exists(REPLAY_FAILURE_RECORDING_MODULE)
+
     coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
     assert coverage_item["status"] == "deferred"
     assert "coverage" in coverage_item["deferred_reason"]
@@ -216,13 +227,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
     assert "matrix-row coverage proof" in coverage_item["authority_required"]
 
-    failure_record_item = next(item for item in checklist if item["id"] == "runtime_replay_failure_record_emission")
-    assert failure_record_item["status"] == "deferred"
-    assert "emits canonical replay failure records" in failure_record_item["authority_required"]
-    assert "ADR-0047" in failure_record_item["architecture_authority"]
-    assert "INV-036" in failure_record_item["architecture_authority"]
-    assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in failure_record_item["architecture_authority"]
-    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in failure_record_item["architecture_authority"]
+    assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)
 
     print("PROOF_CHAIN_CHECKLIST_OK")
 

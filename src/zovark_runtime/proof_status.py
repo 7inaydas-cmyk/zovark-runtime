@@ -180,6 +180,17 @@ PROOF_CHAIN_CHECKLIST = [
         "yaml_artifact_path": "contracts/replay-compatibility.yaml",
     },
     {
+        "id": "replay_failure_record_emission_proof",
+        "status": "satisfied",
+        "proof_marker": "REPLAY_FAILURE_RECORD_EMISSION_OK",
+        "test_file_path": "tests/test_replay_failure_recording.py",
+        "runtime_artifact_paths": [
+            "src/zovark_runtime/replay_failure_recording.py",
+            "src/zovark_runtime/replay_failure_mapping.py",
+        ],
+        "contract_paths": ["contracts/replay_failure_record.schema.json"],
+    },
+    {
         "id": "contract_metaschema_validation",
         "status": "satisfied",
         "proof_marker": "CONTRACT_METASCHEMA_OK",
@@ -193,8 +204,8 @@ PROOF_CHAIN_CHECKLIST = [
     {
         "id": "runtime_replay_compatibility_coverage_mapping",
         "status": "deferred",
-        "deferred_reason": "runtime maps current local replay validation failures to canonical failure codes, but coverage mapping to architecture-defined matrix rows remains deferred",
-        "milestone_or_queue_position": "after canonical replay failure code mapping proof",
+        "deferred_reason": "runtime emits canonical replay failure records for current local validation cases, but coverage mapping to architecture-defined matrix rows remains deferred",
+        "milestone_or_queue_position": "after canonical replay failure-record emission proof",
         "architecture_authority": [
             "ADR-0047",
             "INV-036",
@@ -203,20 +214,6 @@ PROOF_CHAIN_CHECKLIST = [
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
         ],
         "authority_required": "runtime matrix-row coverage proof must land separately before runtime claims replay compatibility coverage",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "runtime_replay_failure_record_emission",
-        "status": "deferred",
-        "deferred_reason": "canonical replay failure-code mapping is proven for current local fail-closed cases, but runtime does not emit canonical replay failure records",
-        "milestone_or_queue_position": "after canonical replay failure code mapping proof",
-        "architecture_authority": [
-            "ADR-0047",
-            "INV-036",
-            "architecture/blueprint/schemas/replay_failure_record.schema.json",
-            "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
-        ],
-        "authority_required": "runtime failure-record emission proof must land separately before runtime emits canonical replay failure records",
         "completion_note": "runtime is not claiming proof-loop completion",
     },
     {
