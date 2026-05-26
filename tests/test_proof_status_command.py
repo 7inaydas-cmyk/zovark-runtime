@@ -1,11 +1,47 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 from pathlib import Path
 
 from zovark_runtime import proof_status
 from zovark_runtime.cli import main
 from zovark_runtime.proof_status import LocalCheckResult
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTRACTS = ROOT / "contracts"
+
+EXPECTED_PROOF_CHAIN_MARKERS = {
+    "SCANNER_FIXTURE_SCHEMA_OK",
+    "VERDICT_FIXTURE_SCHEMA_OK",
+    "VERDICT_INPUT_FIXTURE_SCHEMA_OK",
+    "REPLAY_RECORD_FIXTURE_SCHEMA_OK",
+    "DETERMINISTIC_VERDICT_DERIVATION_OK",
+    "REPLAY_VALIDATION_PROOF_OK",
+    "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
+    "CONTRACT_METASCHEMA_OK",
+}
+
+
+def _load_replay_validation_fail_closed_cases() -> tuple[dict[str, object], ...]:
+    module_path = ROOT / "tests" / "test_replay_validation.py"
+    spec = importlib.util.spec_from_file_location("zovark_runtime_replay_validation_cases", module_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.REPLAY_VALIDATION_FAIL_CLOSED_CASES
+
+
+def _item_by_marker(checklist: list[dict[str, object]], marker: str) -> dict[str, object]:
+    matches = [item for item in checklist if item.get("proof_marker") == marker]
+    assert len(matches) == 1
+    return matches[0]
+
+
+def _assert_repo_file_exists(rel_path: str) -> None:
+    assert (ROOT / rel_path).is_file(), rel_path
 
 
 def _run_cli(args: list[str], capsys) -> dict[str, object]:
@@ -45,12 +81,93 @@ def test_cli_proof_status_labels_deferred_capabilities(capsys) -> None:
     assert "autonomous-dispatch capability" in payload["deferred_capabilities"]
 
 
+def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
+    payload = _run_cli(["proof-status"], capsys)
+
+    assert payload["runtime_proof_loop"] == "incomplete"
+    assert payload["incomplete_reason"]
+    assert isinstance(payload["incomplete_reason"], list)
+
+    assert payload["proof_chain_checklist_scope"] == {
+        "reporting_role": "declarative status explanation",
+        "completion_definition": "not-defined-by-runtime",
+        "completion_authority": "architecture-owned or undefined until explicitly specified",
+        "completion_claim": "not-claimed",
+        "proof_execution": "not-run-by-proof-status",
+    }
+
+    checklist = payload["proof_chain_checklist"]
+    assert checklist
+
+    ids = [item["id"] for item in checklist]
+    assert len(ids) == len(set(ids))
+    for item_id in ids:
+        assert isinstance(item_id, str)
+        assert item_id
+        assert item_id == item_id.lower()
+        assert " " not in item_id
+
+    valid_statuses = {"satisfied", "deferred"}
+    for item in checklist:
+        assert item["status"] in valid_statuses
+
+        if item["status"] == "satisfied":
+            assert item.get("proof_marker")
+            evidence_keys = {
+                "test_file_path",
+                "runtime_artifact_paths",
+                "contract_paths",
+                "fixture_paths",
+                "expected_count",
+            }
+            assert any(item.get(key) for key in evidence_keys)
+
+            if "test_file_path" in item:
+                _assert_repo_file_exists(item["test_file_path"])
+            for rel_path in item.get("runtime_artifact_paths", []):
+                _assert_repo_file_exists(rel_path)
+            for rel_path in item.get("contract_paths", []):
+                _assert_repo_file_exists(rel_path)
+            for rel_path in item.get("fixture_paths", []):
+                _assert_repo_file_exists(rel_path)
+
+        if item["status"] == "deferred":
+            assert item.get("deferred_reason")
+            assert item.get("architecture_authority") or item.get("authority_required")
+            assert item.get("completion_note") == "runtime is not claiming proof-loop completion"
+
+    satisfied_markers = {item["proof_marker"] for item in checklist if item["status"] == "satisfied"}
+    assert satisfied_markers == EXPECTED_PROOF_CHAIN_MARKERS
+
+    contract_count_item = _item_by_marker(checklist, "CONTRACT_METASCHEMA_OK")
+    assert contract_count_item["expected_count"]["value"] == len(list(CONTRACTS.glob("*.schema.json")))
+
+    fail_closed_item = _item_by_marker(checklist, "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK")
+    assert fail_closed_item["expected_count"]["value"] == len(_load_replay_validation_fail_closed_cases())
+
+    print("PROOF_CHAIN_CHECKLIST_OK")
+
+
 def test_cli_proof_status_avoids_readiness_claims(capsys) -> None:
     payload = _run_cli(["proof-status"], capsys)
-    rendered = json.dumps(payload)
+    rendered = json.dumps(payload).lower()
 
-    for prefix in ["customer", "production", "product", "compliance"]:
-        assert f"{prefix}-ready" not in rendered
+    forbidden_claims = [
+        "customer-ready",
+        "customer readiness: ready",
+        "demo-ready",
+        "demo readiness: ready",
+        "product-ready",
+        "product readiness: ready",
+        "production-ready",
+        "production readiness: ready",
+        "compliance-ready",
+        "compliance readiness: ready",
+        "sla-ready",
+        "sla readiness: ready",
+    ]
+    for claim in forbidden_claims:
+        assert claim not in rendered
 
 
 def test_build_proof_status_fails_when_a_local_check_fails(tmp_path: Path) -> None:
