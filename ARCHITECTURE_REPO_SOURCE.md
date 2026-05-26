@@ -8,16 +8,16 @@ Status: provenance note for the Phase 0 runtime skeleton.
 - Architecture source ref: `main`
 - Architecture source tag: none for the current copied snapshot. The
   `v3.2.5.0-baseline-consolidated` tag predates the VerdictInput/ReplayRecord
-  contract addition.
+  contract addition and the replay failure contract.
 - Architecture source commit:
-  `fa58bb16cf0e3209ba8c3310eabbac40f95b6b61`
+  `34c42ebb24b69098159ddccbbcae981d0abe74af`
 
 ## Baseline Inventory
 
 - 26 ADR files: 25 binding ADRs plus ADR-0043 proposed/pending founder
   sign-off.
 - 39 invariants.
-- 25 authoritative schemas.
+- 26 authoritative schemas.
 - Replay compatibility contract:
   `architecture/replay-compatibility.yaml`.
 
@@ -32,6 +32,7 @@ Only the following contracts were copied:
 - `contracts/recommended_action.schema.json`
 - `contracts/replay-compatibility.schema.json`
 - `contracts/replay-compatibility.yaml`
+- `contracts/replay_failure_record.schema.json`
 - `contracts/replay_record.schema.json`
 - `contracts/scanner_finding_envelope.schema.json`
 - `contracts/verdict_envelope.schema.json`

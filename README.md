@@ -13,8 +13,8 @@ No runtime product exists yet.
 
 - Contract snapshot copied from
   `7inaydas-cmyk/zovark-architecture` at main commit
-  `fa58bb16cf0e3209ba8c3310eabbac40f95b6b61`. No tag currently contains the
-  PR #54 VerdictInput/ReplayRecord contracts.
+  `34c42ebb24b69098159ddccbbcae981d0abe74af`. No tag currently contains the
+  PR #56 replay failure contract.
 - Copied `scanner_finding_envelope.schema.json` for future synthetic alert
   fixture validation. It is not runtime-enforced yet.
 - Copied verdict schema set (`verdict_envelope.schema.json`,
@@ -27,8 +27,11 @@ No runtime product exists yet.
   `replay-compatibility.schema.json` for local validation of the architecture
   replay compatibility matrix contract. This is not replay coverage mapping or
   runtime enforcement.
+- Copied `replay_failure_record.schema.json` for local validation of the
+  canonical replay failure-code and failure-record contract. Runtime mapping to
+  those failure codes is deferred.
 - Architecture baseline inventory: 25 binding ADRs plus ADR-0043
-  proposed/pending founder sign-off, 39 invariants, 25 authoritative schemas,
+  proposed/pending founder sign-off, 39 invariants, 26 authoritative schemas,
   and replay compatibility contract `architecture/replay-compatibility.yaml`.
 - Phase 0 invariants for proof, Replay, and Context Compaction Memory.
 - Feature lifecycle placeholders for planned runtime work.

@@ -109,8 +109,7 @@
     "structured_failure_codes": {
       "type": "array",
       "items": {
-        "type": "string",
-        "pattern": "^REPLAY_[A-Z_]+$"
+        "$ref": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json#/$defs/ReplayFailureCode"
       },
       "minItems": 1,
       "uniqueItems": true

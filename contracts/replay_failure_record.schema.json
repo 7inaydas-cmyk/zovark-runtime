@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json",
+  "title": "Replay Failure Record",
+  "description": "Canonical bounded replay failure record for fail-closed replay validation outcomes. It carries structured codes and bounded identifiers/hashes only; raw prompts, hidden reasoning, and raw tool/model outputs are excluded.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "replay-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-breaking-change-requires-adr": true,
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "failure_code",
+    "failure_category",
+    "tenant_id",
+    "investigation_id",
+    "replay_compatibility_contract",
+    "component",
+    "field_path",
+    "fail_closed_reason"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "failure_code": {
+      "$ref": "#/$defs/ReplayFailureCode"
+    },
+    "failure_category": {
+      "$ref": "#/$defs/ReplayFailureCategory"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "investigation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "replay_compatibility_contract": {
+      "type": "string",
+      "const": "architecture/replay-compatibility.yaml"
+    },
+    "replay_record_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    },
+    "component": {
+      "$ref": "#/$defs/ReplayFailureComponent"
+    },
+    "field_path": {
+      "$ref": "#/$defs/FieldPath"
+    },
+    "expected_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    },
+    "observed_hash": {
+      "$ref": "#/$defs/Sha256Hex"
+    },
+    "expected_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "observed_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "fail_closed_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Bounded human-readable reason for fail-closed replay rejection. It must not include raw prompts, hidden reasoning, or raw tool/model output."
+    }
+  },
+  "$defs": {
+    "ReplayFailureCode": {
+      "type": "string",
+      "enum": [
+        "REPLAY_SCHEMA_INCOMPATIBLE",
+        "REPLAY_RECORD_FORMAT_INCOMPATIBLE",
+        "REPLAY_TOOL_RETIRED",
+        "REPLAY_TOOL_CATALOG_MISMATCH",
+        "REPLAY_VERDICT_INPUT_HASH_MISMATCH",
+        "REPLAY_VERDICT_ENVELOPE_HASH_MISMATCH",
+        "REPLAY_MODEL_VERSION_MISMATCH",
+        "REPLAY_DECODING_PARAMS_MISMATCH",
+        "REPLAY_PROMPT_HASH_MISSING",
+        "REPLAY_PROMPT_HASH_MISMATCH"
+      ]
+    },
+    "ReplayFailureCategory": {
+      "type": "string",
+      "enum": [
+        "schema_compatibility",
+        "catalog_compatibility",
+        "hash_integrity",
+        "model_compatibility",
+        "prompt_integrity",
+        "tool_compatibility"
+      ]
+    },
+    "ReplayFailureComponent": {
+      "type": "string",
+      "enum": [
+        "replay_record",
+        "record_schema",
+        "record_format",
+        "replay_compatibility_matrix",
+        "tool_catalog",
+        "tool_catalog_entry",
+        "verdict_input",
+        "verdict_envelope",
+        "model_artifacts",
+        "decoding_params",
+        "prompt_hashes"
+      ]
+    },
+    "FieldPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*|\\[[0-9]+\\])*$"
+    },
+    "Sha256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "VersionString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    }
+  }
+}
