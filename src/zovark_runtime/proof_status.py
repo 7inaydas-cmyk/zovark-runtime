@@ -204,6 +204,18 @@ PROOF_CHAIN_CHECKLIST = [
         "contract_paths": ["contracts/replay_failure_record.schema.json"],
     },
     {
+        "id": "replay_compatibility_matrix_row_mapping_proof",
+        "status": "satisfied",
+        "proof_marker": "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
+        "test_file_path": "tests/test_replay_compatibility_mapping.py",
+        "runtime_artifact_paths": [
+            "src/zovark_runtime/replay_compatibility_mapping.py",
+            "src/zovark_runtime/replay_failure_recording.py",
+        ],
+        "contract_paths": ["contracts/replay_failure_record.schema.json"],
+        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
+    },
+    {
         "id": "contract_metaschema_validation",
         "status": "satisfied",
         "proof_marker": "CONTRACT_METASCHEMA_OK",
@@ -215,10 +227,10 @@ PROOF_CHAIN_CHECKLIST = [
         },
     },
     {
-        "id": "runtime_replay_compatibility_coverage_mapping",
+        "id": "runtime_replay_compatibility_coverage_claim",
         "status": "deferred",
-        "deferred_reason": "architecture row/outcome semantics are imported and schema-validated, but runtime matrix-row mapping and replay compatibility coverage claims remain deferred",
-        "milestone_or_queue_position": "after replay compatibility row coverage contract import",
+        "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, but full replay compatibility coverage claims remain deferred because current runtime fail-closed cases do not cover all architecture rows",
+        "milestone_or_queue_position": "after missing runtime row evidence is scoped and proven",
         "architecture_authority": [
             "ADR-0047",
             "INV-036",
@@ -227,7 +239,7 @@ PROOF_CHAIN_CHECKLIST = [
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
         ],
-        "authority_required": "runtime matrix-row mapping proof must land separately before runtime claims replay compatibility coverage",
+        "authority_required": "full coverage proof must cover every architecture-defined row or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
         "completion_note": "runtime is not claiming proof-loop completion",
     },
     {
