@@ -145,10 +145,23 @@ PROOF_CHAIN_CHECKLIST = [
         "test_file_path": "tests/test_replay_compatibility_contract.py",
         "yaml_artifact_path": "contracts/replay-compatibility.yaml",
         "schema_artifact_path": "contracts/replay-compatibility.schema.json",
-        "architecture_source_commit": "34c42ebb24b69098159ddccbbcae981d0abe74af",
+        "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
         "source_hashes": {
-            "contracts/replay-compatibility.yaml": "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
-            "contracts/replay-compatibility.schema.json": "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
+            "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
+            "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
+        },
+    },
+    {
+        "id": "replay_compatibility_row_coverage_schema_validation",
+        "status": "satisfied",
+        "proof_marker": "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK",
+        "test_file_path": "tests/test_replay_compatibility_contract.py",
+        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
+        "schema_artifact_path": "contracts/replay-compatibility.schema.json",
+        "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
+        "source_hashes": {
+            "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
+            "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
         },
     },
     {
@@ -204,16 +217,17 @@ PROOF_CHAIN_CHECKLIST = [
     {
         "id": "runtime_replay_compatibility_coverage_mapping",
         "status": "deferred",
-        "deferred_reason": "runtime emits canonical replay failure records for current local validation cases, but coverage mapping to architecture-defined matrix rows remains deferred",
-        "milestone_or_queue_position": "after canonical replay failure-record emission proof",
+        "deferred_reason": "architecture row/outcome semantics are imported and schema-validated, but runtime matrix-row mapping and replay compatibility coverage claims remain deferred",
+        "milestone_or_queue_position": "after replay compatibility row coverage contract import",
         "architecture_authority": [
             "ADR-0047",
             "INV-036",
             "architecture/replay-compatibility.yaml",
             "architecture/blueprint/schemas/replay_failure_record.schema.json",
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
+            "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
         ],
-        "authority_required": "runtime matrix-row coverage proof must land separately before runtime claims replay compatibility coverage",
+        "authority_required": "runtime matrix-row mapping proof must land separately before runtime claims replay compatibility coverage",
         "completion_note": "runtime is not claiming proof-loop completion",
     },
     {

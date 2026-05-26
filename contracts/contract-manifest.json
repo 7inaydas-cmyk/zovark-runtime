@@ -33,18 +33,18 @@
     {
       "path": "contracts/replay-compatibility.schema.json",
       "kind": "schema",
-      "sha256": "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
+      "sha256": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
       "status": "draft-architecture-contract",
-      "source_commit": "34c42ebb24b69098159ddccbbcae981d0abe74af",
-      "note": "Copied from zovark-architecture main commit 34c42ebb24b69098159ddccbbcae981d0abe74af; canonical replay compatibility configuration schema. Not runtime-enforced yet."
+      "source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
+      "note": "Copied from zovark-architecture main commit 5411106481dd843f754dc6a86f7371e1468610fc after PR #58; canonical replay compatibility row coverage configuration schema. Not runtime-enforced yet."
     },
     {
       "path": "contracts/replay-compatibility.yaml",
       "kind": "data-artifact",
-      "sha256": "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
+      "sha256": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
       "status": "draft-architecture-contract",
-      "source_commit": "34c42ebb24b69098159ddccbbcae981d0abe74af",
-      "note": "Copied from zovark-architecture main commit 34c42ebb24b69098159ddccbbcae981d0abe74af; canonical replay compatibility matrix data artifact. Not runtime-enforced yet."
+      "source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
+      "note": "Copied from zovark-architecture main commit 5411106481dd843f754dc6a86f7371e1468610fc after PR #58; canonical replay compatibility row coverage matrix data artifact. Not runtime-enforced yet."
     },
     {
       "path": "contracts/replay_failure_record.schema.json",
@@ -81,8 +81,8 @@
       "note": "Copied from zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61 after PR #54; canonical verdict/replay proof contract for future fixture validation. Not runtime-enforced yet."
     }
   ],
-  "note": "Contract snapshot only; not runtime-enforced yet. Current snapshot is pinned to zovark-architecture main commit 34c42ebb24b69098159ddccbbcae981d0abe74af; no tag contains the PR #56 replay failure contract yet.",
-  "source_commit": "34c42ebb24b69098159ddccbbcae981d0abe74af",
+  "note": "Contract snapshot only; not runtime-enforced yet. Current snapshot includes zovark-architecture main commit 5411106481dd843f754dc6a86f7371e1468610fc for the PR #58 replay compatibility row coverage contract; earlier imported contracts retain per-entry source commits.",
+  "source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
   "source_repo": "https://github.com/7inaydas-cmyk/zovark-architecture",
   "source_tag": null,
   "status": "draft-architecture-contract",

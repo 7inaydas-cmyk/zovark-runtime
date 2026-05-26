@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 from pathlib import Path
 
@@ -55,16 +56,76 @@ def _contract_registry():
     return registry
 
 
-def test_replay_compatibility_matrix_validates_against_canonical_schema() -> None:
+def _validator():
     schema = _load_schema()
     validator_cls = validator_for(schema)
     validator_cls.check_schema(schema)
 
-    matrix = yaml.safe_load(REPLAY_COMPATIBILITY_MATRIX.read_text(encoding="utf-8"))
     if Registry is not None:
-        validator_cls(schema, registry=_contract_registry()).validate(matrix)
-    else:
-        resolver = jsonschema.validators.RefResolver.from_schema(schema, store=_contract_store())
-        validator_cls(schema, resolver=resolver).validate(matrix)
+        return validator_cls(schema, registry=_contract_registry())
+
+    resolver = jsonschema.validators.RefResolver.from_schema(schema, store=_contract_store())
+    return validator_cls(schema, resolver=resolver)
+
+
+def _load_matrix() -> dict:
+    matrix = yaml.safe_load(REPLAY_COMPATIBILITY_MATRIX.read_text(encoding="utf-8"))
+    assert isinstance(matrix, dict)
+    return matrix
+
+
+def _failure_code_enum() -> tuple[str, ...]:
+    schema = _contract_store()["https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json"]
+    return tuple(schema["$defs"]["ReplayFailureCode"]["enum"])
+
+
+def test_replay_compatibility_matrix_validates_against_canonical_schema() -> None:
+    _validator().validate(_load_matrix())
 
     print("REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK")
+
+
+def test_replay_compatibility_row_coverage_contract_validates_against_canonical_schema() -> None:
+    validator = _validator()
+    matrix = _load_matrix()
+    failure_codes = _failure_code_enum()
+
+    validator.validate(matrix)
+
+    rows = matrix.get("failure_outcome_rows")
+    assert isinstance(rows, list)
+    assert rows
+
+    row_ids = [row["row_id"] for row in rows]
+    assert len(row_ids) == len(set(row_ids))
+
+    row_failure_codes = [code for row in rows for code in row["failure_codes"]]
+    assert matrix["structured_failure_codes"] == list(failure_codes)
+    assert set(row_failure_codes) == set(failure_codes)
+    assert len(row_failure_codes) == len(set(row_failure_codes)) == len(failure_codes)
+
+    rendered = json.dumps(matrix)
+    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in rendered
+    for row in rows:
+        assert row["outcome"] == "fail_closed"
+        assert row["failure_codes"]
+        assert "canonical_replay_failure_record" in row["runtime_evidence_required"]
+        assert "runtime_coverage_claim" not in row
+
+    row_with_extra_field = copy.deepcopy(matrix)
+    row_with_extra_field["failure_outcome_rows"][0]["runtime_coverage_claim"] = True
+    if hasattr(validator, "iter_errors"):
+        assert list(validator.iter_errors(row_with_extra_field))
+    else:
+        with pytest.raises(jsonschema.ValidationError):
+            validator.validate(row_with_extra_field)
+
+    row_with_unknown_code = copy.deepcopy(matrix)
+    row_with_unknown_code["failure_outcome_rows"][0]["failure_codes"] = ["REPLAY_RUNTIME_LOCAL_ONLY"]
+    if hasattr(validator, "iter_errors"):
+        assert list(validator.iter_errors(row_with_unknown_code))
+    else:
+        with pytest.raises(jsonschema.ValidationError):
+            validator.validate(row_with_unknown_code)
+
+    print("REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK")

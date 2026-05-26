@@ -39,4 +39,127 @@ structured_failure_codes:
   - REPLAY_DECODING_PARAMS_MISMATCH
   - REPLAY_PROMPT_HASH_MISSING
   - REPLAY_PROMPT_HASH_MISMATCH
+failure_outcome_rows:
+  - row_id: schema_compatibility.record_schema_incompatible
+    compatibility_dimension: schema_compatibility
+    component: record_schema
+    failure_codes:
+      - REPLAY_SCHEMA_INCOMPATIBLE
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_version
+      - observed_version
+  - row_id: schema_compatibility.record_format_incompatible
+    compatibility_dimension: schema_compatibility
+    component: record_format
+    failure_codes:
+      - REPLAY_RECORD_FORMAT_INCOMPATIBLE
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_version
+      - observed_version
+  - row_id: tool_compatibility.tool_retired
+    compatibility_dimension: tool_compatibility
+    component: tool_catalog_entry
+    failure_codes:
+      - REPLAY_TOOL_RETIRED
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+  - row_id: catalog_compatibility.tool_catalog_mismatch
+    compatibility_dimension: catalog_compatibility
+    component: tool_catalog
+    failure_codes:
+      - REPLAY_TOOL_CATALOG_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_version
+      - observed_version
+  - row_id: hash_integrity.verdict_input_hash_mismatch
+    compatibility_dimension: hash_integrity
+    component: verdict_input
+    failure_codes:
+      - REPLAY_VERDICT_INPUT_HASH_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_hash
+      - observed_hash
+  - row_id: hash_integrity.verdict_envelope_hash_mismatch
+    compatibility_dimension: hash_integrity
+    component: verdict_envelope
+    failure_codes:
+      - REPLAY_VERDICT_ENVELOPE_HASH_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_hash
+      - observed_hash
+  - row_id: model_compatibility.model_version_mismatch
+    compatibility_dimension: model_compatibility
+    component: model_artifacts
+    failure_codes:
+      - REPLAY_MODEL_VERSION_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+      - expected_version
+      - observed_version
+  - row_id: model_compatibility.decoding_params_mismatch
+    compatibility_dimension: model_compatibility
+    component: decoding_params
+    failure_codes:
+      - REPLAY_DECODING_PARAMS_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+  - row_id: prompt_integrity.prompt_hash_missing
+    compatibility_dimension: prompt_integrity
+    component: prompt_hashes
+    failure_codes:
+      - REPLAY_PROMPT_HASH_MISSING
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
+  - row_id: prompt_integrity.prompt_hash_mismatch
+    compatibility_dimension: prompt_integrity
+    component: prompt_hashes
+    failure_codes:
+      - REPLAY_PROMPT_HASH_MISMATCH
+    outcome: fail_closed
+    runtime_evidence_required:
+      - canonical_replay_failure_record
+      - failure_code
+      - component
+      - field_path
 historical_catalogs_root: "architecture/replay/catalogs"
