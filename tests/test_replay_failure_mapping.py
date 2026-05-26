@@ -10,6 +10,7 @@ from typing import Any
 import pytest
 
 from zovark_runtime.replay_failure_mapping import (
+    REPLAY_DECODING_PARAMS_MISMATCH,
     REPLAY_PROMPT_HASH_MISSING,
     REPLAY_RECORD_FORMAT_INCOMPATIBLE,
     REPLAY_TOOL_CATALOG_MISMATCH,
@@ -51,6 +52,7 @@ EXPECTED_CANONICAL_CODES_BY_CASE_ID = {
     "verdict_envelope_hash_mismatch": VERDICT_ENVELOPE_HASH_MISMATCH,
     "tool_catalog_version_mismatch": REPLAY_TOOL_CATALOG_MISMATCH,
     "model_version_mismatch": MODEL_VERSION_MISMATCH,
+    "decoding_params_mismatch": REPLAY_DECODING_PARAMS_MISMATCH,
     "prompt_hash_empty": PROMPT_HASH_MISMATCH,
     "prompt_hash_mismatch": PROMPT_HASH_MISMATCH,
     "prompt_hash_missing": REPLAY_PROMPT_HASH_MISSING,
@@ -112,7 +114,7 @@ def test_current_fail_closed_cases_map_to_canonical_failure_codes() -> None:
     canonical_enum = _failure_code_enum()
     compatibility_codes = _replay_compatibility_codes()
 
-    assert len(cases) == 9
+    assert len(cases) == 10
     assert {case["id"] for case in cases} == set(EXPECTED_CANONICAL_CODES_BY_CASE_ID)
 
     for case in cases:
@@ -156,6 +158,20 @@ def test_mapping_disambiguates_overloaded_local_result_codes() -> None:
             "prompt hashes do not match verdict input prompt hash",
         )
         == PROMPT_HASH_MISMATCH
+    )
+    assert (
+        canonical_replay_failure_code_for_local_result(
+            MODEL_VERSION_MISMATCH,
+            "model version differs from verdict input",
+        )
+        == MODEL_VERSION_MISMATCH
+    )
+    assert (
+        canonical_replay_failure_code_for_local_result(
+            MODEL_VERSION_MISMATCH,
+            "decoding parameters differ from verdict input",
+        )
+        == REPLAY_DECODING_PARAMS_MISMATCH
     )
 
 

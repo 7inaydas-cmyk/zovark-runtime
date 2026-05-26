@@ -34,13 +34,13 @@ EXPECTED_ROW_ID_BY_CASE_ID = {
     "verdict_envelope_hash_mismatch": "hash_integrity.verdict_envelope_hash_mismatch",
     "tool_catalog_version_mismatch": "catalog_compatibility.tool_catalog_mismatch",
     "model_version_mismatch": "model_compatibility.model_version_mismatch",
+    "decoding_params_mismatch": "model_compatibility.decoding_params_mismatch",
     "prompt_hash_empty": "prompt_integrity.prompt_hash_mismatch",
     "prompt_hash_mismatch": "prompt_integrity.prompt_hash_mismatch",
     "prompt_hash_missing": "prompt_integrity.prompt_hash_missing",
 }
 
 UNCOVERED_MATRIX_CODES = {
-    "REPLAY_DECODING_PARAMS_MISMATCH",
     "REPLAY_TOOL_RETIRED",
 }
 
@@ -112,7 +112,7 @@ def test_current_emitted_failure_records_map_to_architecture_row_ids() -> None:
     cases = _fail_closed_cases()
     rows = _failure_outcome_rows()
 
-    assert len(cases) == 9
+    assert len(cases) == 10
     assert {case["id"] for case in cases} == set(EXPECTED_ROW_ID_BY_CASE_ID)
 
     for case in cases:

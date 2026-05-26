@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from zovark_runtime.replay_failure_mapping import (
+    REPLAY_DECODING_PARAMS_MISMATCH,
     REPLAY_PROMPT_HASH_MISSING,
     REPLAY_RECORD_FORMAT_INCOMPATIBLE,
     REPLAY_TOOL_CATALOG_MISMATCH,
@@ -71,6 +72,12 @@ REPLAY_FAILURE_RECORD_METADATA_BY_CODE = {
         "field_path": "model_version",
         "observed_version_field": "model_version",
         "fail_closed_reason": "Replay model version differs from the canonical verdict input.",
+    },
+    REPLAY_DECODING_PARAMS_MISMATCH: {
+        "failure_category": "model_compatibility",
+        "component": "decoding_params",
+        "field_path": "decoding_params",
+        "fail_closed_reason": "Replay decoding parameters differ from the canonical verdict input.",
     },
     PROMPT_HASH_MISMATCH: {
         "failure_category": "prompt_integrity",

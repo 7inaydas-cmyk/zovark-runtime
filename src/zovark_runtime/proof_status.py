@@ -134,7 +134,7 @@ PROOF_CHAIN_CHECKLIST = [
         "runtime_artifact_paths": ["src/zovark_runtime/replay_validation.py"],
         "expected_count": {
             "name": "replay_validation_fail_closed_cases",
-            "value": 9,
+            "value": 10,
             "source": "tests/test_replay_validation.py::REPLAY_VALIDATION_FAIL_CLOSED_CASES",
         },
     },
@@ -216,6 +216,26 @@ PROOF_CHAIN_CHECKLIST = [
         "yaml_artifact_path": "contracts/replay-compatibility.yaml",
     },
     {
+        "id": "replay_decoding_params_fail_closed_proof",
+        "status": "satisfied",
+        "proof_marker": "REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK",
+        "test_file_path": "tests/test_replay_validation.py",
+        "related_test_file_paths": [
+            "tests/test_replay_failure_mapping.py",
+            "tests/test_replay_failure_recording.py",
+            "tests/test_replay_compatibility_mapping.py",
+        ],
+        "runtime_artifact_paths": [
+            "src/zovark_runtime/replay_failure_mapping.py",
+            "src/zovark_runtime/replay_failure_recording.py",
+            "src/zovark_runtime/replay_compatibility_mapping.py",
+        ],
+        "contract_paths": ["contracts/replay_failure_record.schema.json"],
+        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
+        "canonical_code": "REPLAY_DECODING_PARAMS_MISMATCH",
+        "row_id": "model_compatibility.decoding_params_mismatch",
+    },
+    {
         "id": "contract_metaschema_validation",
         "status": "satisfied",
         "proof_marker": "CONTRACT_METASCHEMA_OK",
@@ -229,8 +249,8 @@ PROOF_CHAIN_CHECKLIST = [
     {
         "id": "runtime_replay_compatibility_coverage_claim",
         "status": "deferred",
-        "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, but full replay compatibility coverage claims remain deferred because current runtime fail-closed cases do not cover all architecture rows",
-        "milestone_or_queue_position": "after missing runtime row evidence is scoped and proven",
+        "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch, but full replay compatibility coverage remains deferred because REPLAY_TOOL_RETIRED is not represented by current runtime validation",
+        "milestone_or_queue_position": "after REPLAY_TOOL_RETIRED authority and runtime behavior are scoped and proven",
         "architecture_authority": [
             "ADR-0047",
             "INV-036",
@@ -239,7 +259,7 @@ PROOF_CHAIN_CHECKLIST = [
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
             "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
         ],
-        "authority_required": "full coverage proof must cover every architecture-defined row or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
+        "authority_required": "full coverage proof must cover REPLAY_TOOL_RETIRED or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
         "completion_note": "runtime is not claiming proof-loop completion",
     },
     {
