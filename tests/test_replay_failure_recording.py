@@ -9,7 +9,10 @@ from typing import Any
 
 import pytest
 
-from zovark_runtime.replay_failure_mapping import canonical_replay_failure_code
+from zovark_runtime.replay_failure_mapping import (
+    REPLAY_DECODING_PARAMS_MISMATCH,
+    canonical_replay_failure_code,
+)
 from zovark_runtime.replay_failure_recording import canonical_replay_failure_record
 from zovark_runtime.replay_validation import (
     FAILURE_POLICY_INCOMPATIBLE,
@@ -147,7 +150,7 @@ def test_current_fail_closed_cases_emit_canonical_failure_records() -> None:
     canonical_enum = _failure_code_enum()
     compatibility_codes = _replay_compatibility_codes()
 
-    assert len(cases) == 9
+    assert len(cases) == 10
 
     for case in cases:
         replay_record = _mutated_replay_record_for_case(case)
@@ -184,6 +187,24 @@ def test_emitted_failure_records_are_deterministic() -> None:
         assert first_failure_record is not None
         assert second_failure_record is not None
         assert canonical_json_bytes(first_failure_record) == canonical_json_bytes(second_failure_record)
+
+
+def test_decoding_params_failure_record_uses_bounded_metadata() -> None:
+    case = next(case for case in _fail_closed_cases() if case["id"] == "decoding_params_mismatch")
+    replay_record = _mutated_replay_record_for_case(case)
+    result = _result_for_replay_record(replay_record)
+
+    failure_record = canonical_replay_failure_record(result, replay_record)
+
+    assert failure_record is not None
+    assert failure_record["failure_code"] == REPLAY_DECODING_PARAMS_MISMATCH
+    assert failure_record["failure_category"] == "model_compatibility"
+    assert failure_record["component"] == "decoding_params"
+    assert failure_record["field_path"] == "decoding_params"
+    assert "decoding_params" not in failure_record
+    assert "expected_decoding_params" not in failure_record
+    assert "observed_decoding_params" not in failure_record
+    assert not (FORBIDDEN_RAW_FIELDS & set(failure_record))
 
 
 @pytest.mark.parametrize(

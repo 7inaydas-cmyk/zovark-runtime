@@ -79,6 +79,17 @@ REPLAY_VALIDATION_FAIL_CLOSED_CASES = (
         "expected_code": MODEL_VERSION_MISMATCH,
     },
     {
+        "id": "decoding_params_mismatch",
+        "field_name": "decoding_params",
+        "value": {
+            "temperature": 0,
+            "top_p": 1,
+            "max_output_tokens": 256,
+            "seed_policy": "synthetic_mismatch_no_seed",
+        },
+        "expected_code": MODEL_VERSION_MISMATCH,
+    },
+    {
         "id": "prompt_hash_empty",
         "field_name": "prompt_hashes",
         "value": [],
@@ -186,6 +197,9 @@ def test_replay_validation_fails_closed_on_expected_cases(case: dict[str, Any]) 
 
     assert not result.ok
     assert result.code == case["expected_code"]
+    if case["id"] == "decoding_params_mismatch":
+        assert result.detail == "decoding parameters differ from verdict input"
+        print("REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK")
 
 
 def test_replay_validation_uses_local_codes_without_schema_failure_code_changes() -> None:
