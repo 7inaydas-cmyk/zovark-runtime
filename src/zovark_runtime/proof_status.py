@@ -163,6 +163,14 @@ PROOF_CHAIN_CHECKLIST = [
         },
     },
     {
+        "id": "replay_failure_record_fixture_schema_proof",
+        "status": "satisfied",
+        "proof_marker": "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
+        "test_file_path": "tests/test_replay_failure_record_fixture.py",
+        "contract_paths": ["contracts/replay_failure_record.schema.json"],
+        "fixture_paths": ["tests/fixtures/replay_failure_record_minimal.json"],
+    },
+    {
         "id": "contract_metaschema_validation",
         "status": "satisfied",
         "proof_marker": "CONTRACT_METASCHEMA_OK",

@@ -23,6 +23,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
     "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
     "REPLAY_FAILURE_RECORD_SCHEMA_OK",
+    "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
     "CONTRACT_METASCHEMA_OK",
 }
 
@@ -30,6 +31,7 @@ ARCHITECTURE_SOURCE_COMMIT = "34c42ebb24b69098159ddccbbcae981d0abe74af"
 REPLAY_COMPATIBILITY_YAML = "contracts/replay-compatibility.yaml"
 REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
 REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
+REPLAY_FAILURE_RECORD_FIXTURE = "tests/fixtures/replay_failure_record_minimal.json"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
     REPLAY_COMPATIBILITY_YAML: "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
     REPLAY_COMPATIBILITY_SCHEMA: "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
@@ -189,6 +191,12 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     for rel_path, expected_hash in REPLAY_FAILURE_RECORD_SOURCE_HASHES.items():
         _assert_repo_file_exists(rel_path)
         assert _sha256(rel_path) == expected_hash
+
+    replay_failure_fixture_item = _item_by_marker(checklist, "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK")
+    assert replay_failure_fixture_item["test_file_path"] == "tests/test_replay_failure_record_fixture.py"
+    assert replay_failure_fixture_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    assert replay_failure_fixture_item["fixture_paths"] == [REPLAY_FAILURE_RECORD_FIXTURE]
+    _assert_repo_file_exists(REPLAY_FAILURE_RECORD_FIXTURE)
 
     coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
     assert coverage_item["status"] == "deferred"
