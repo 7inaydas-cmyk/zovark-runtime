@@ -41,6 +41,57 @@ REPLAY_FIXTURE = FIXTURES / "replay_record_expected_minimal.json"
 VERDICT_INPUT_FIXTURE = FIXTURES / "verdict_input_minimal.json"
 EXPECTED_VERDICT_FIXTURE = FIXTURES / "verdict_envelope_expected_from_minimal_input.json"
 
+REPLAY_VALIDATION_FAIL_CLOSED_CASES = (
+    {
+        "id": "schema_version_incompatible",
+        "field_name": "schema_version",
+        "value": "2.0.0",
+        "expected_code": SCHEMA_INCOMPATIBLE,
+    },
+    {
+        "id": "record_format_version_incompatible",
+        "field_name": "record_format_version",
+        "value": "2.0.0",
+        "expected_code": SCHEMA_INCOMPATIBLE,
+    },
+    {
+        "id": "verdict_input_hash_mismatch",
+        "field_name": "verdict_input_hash",
+        "value": "0" * 64,
+        "expected_code": VERDICT_INPUT_HASH_MISMATCH,
+    },
+    {
+        "id": "verdict_envelope_hash_mismatch",
+        "field_name": "verdict_envelope_hash",
+        "value": "0" * 64,
+        "expected_code": VERDICT_ENVELOPE_HASH_MISMATCH,
+    },
+    {
+        "id": "tool_catalog_version_mismatch",
+        "field_name": "tool_catalog_version",
+        "value": "synthetic-tool-catalog-2.0.0",
+        "expected_code": TOOL_CATALOG_VERSION_MISMATCH,
+    },
+    {
+        "id": "model_version_mismatch",
+        "field_name": "model_version",
+        "value": "2.0.0",
+        "expected_code": MODEL_VERSION_MISMATCH,
+    },
+    {
+        "id": "prompt_hash_mismatch",
+        "field_name": "prompt_hashes",
+        "value": ["0" * 64],
+        "expected_code": PROMPT_HASH_MISMATCH,
+    },
+    {
+        "id": "prompt_hash_missing",
+        "field_name": "prompt_hashes",
+        "delete": True,
+        "expected_code": PROMPT_HASH_MISMATCH,
+    },
+)
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -113,84 +164,22 @@ def test_replay_validation_succeeds_for_expected_minimal_record() -> None:
 
 
 @pytest.mark.parametrize(
-    ("field_name", "value"),
-    [
-        ("schema_version", "2.0.0"),
-        ("record_format_version", "2.0.0"),
-    ],
+    "case",
+    REPLAY_VALIDATION_FAIL_CLOSED_CASES,
+    ids=lambda case: case["id"],
 )
-def test_replay_validation_fails_closed_on_incompatible_schema_versions(
-    field_name: str,
-    value: str,
-) -> None:
+def test_replay_validation_fails_closed_on_expected_cases(case: dict[str, Any]) -> None:
     replay_record = _valid_replay_record()
-    replay_record[field_name] = value
-
-    result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
-
-    assert not result.ok
-    assert result.code == SCHEMA_INCOMPATIBLE
-
-
-def test_replay_validation_fails_closed_on_verdict_input_hash_mismatch() -> None:
-    replay_record = _valid_replay_record()
-    replay_record["verdict_input_hash"] = "0" * 64
-
-    result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
-
-    assert not result.ok
-    assert result.code == VERDICT_INPUT_HASH_MISMATCH
-
-
-def test_replay_validation_fails_closed_on_verdict_envelope_hash_mismatch() -> None:
-    replay_record = _valid_replay_record()
-    replay_record["verdict_envelope_hash"] = "0" * 64
-
-    result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
-
-    assert not result.ok
-    assert result.code == VERDICT_ENVELOPE_HASH_MISMATCH
-
-
-def test_replay_validation_fails_closed_on_tool_catalog_version_mismatch() -> None:
-    replay_record = _valid_replay_record()
-    replay_record["tool_catalog_version"] = "synthetic-tool-catalog-2.0.0"
-
-    result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
-
-    assert not result.ok
-    assert result.code == TOOL_CATALOG_VERSION_MISMATCH
-
-
-def test_replay_validation_fails_closed_on_model_version_mismatch() -> None:
-    replay_record = _valid_replay_record()
-    replay_record["model_version"] = "2.0.0"
-
-    result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
-
-    assert not result.ok
-    assert result.code == MODEL_VERSION_MISMATCH
-
-
-@pytest.mark.parametrize(
-    "prompt_hashes",
-    [
-        [],
-        ["0" * 64],
-        None,
-    ],
-)
-def test_replay_validation_fails_closed_on_prompt_hash_mismatch(prompt_hashes: list[str] | None) -> None:
-    replay_record = _valid_replay_record()
-    if prompt_hashes is None:
-        del replay_record["prompt_hashes"]
+    field_name = case["field_name"]
+    if case.get("delete"):
+        del replay_record[field_name]
     else:
-        replay_record["prompt_hashes"] = prompt_hashes
+        replay_record[field_name] = case["value"]
 
     result = validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
 
     assert not result.ok
-    assert result.code == PROMPT_HASH_MISMATCH
+    assert result.code == case["expected_code"]
 
 
 def test_replay_validation_uses_local_codes_without_schema_failure_code_changes() -> None:
