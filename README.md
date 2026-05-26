@@ -13,8 +13,8 @@ No runtime product exists yet.
 
 - Contract snapshot copied from
   `7inaydas-cmyk/zovark-architecture` at main commit
-  `34c42ebb24b69098159ddccbbcae981d0abe74af`. No tag currently contains the
-  PR #56 replay failure contract.
+  `5411106481dd843f754dc6a86f7371e1468610fc`. No tag currently contains the
+  PR #58 replay compatibility row coverage contract.
 - Copied `scanner_finding_envelope.schema.json` for future synthetic alert
   fixture validation. It is not runtime-enforced yet.
 - Copied verdict schema set (`verdict_envelope.schema.json`,
@@ -25,8 +25,8 @@ No runtime product exists yet.
   runtime-enforced yet.
 - Copied `replay-compatibility.yaml` and
   `replay-compatibility.schema.json` for local validation of the architecture
-  replay compatibility matrix contract. This is not replay coverage mapping or
-  runtime enforcement.
+  replay compatibility matrix and row coverage contract. This is not runtime
+  matrix-row mapping, replay coverage claiming, or runtime enforcement.
 - Copied `replay_failure_record.schema.json` for local validation of the
   canonical replay failure-code and failure-record contract. Runtime mapping to
   those failure codes is deferred.

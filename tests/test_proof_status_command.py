@@ -22,6 +22,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_VALIDATION_PROOF_OK",
     "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
     "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
+    "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK",
     "REPLAY_FAILURE_RECORD_SCHEMA_OK",
     "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
     "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
@@ -29,7 +30,8 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "CONTRACT_METASCHEMA_OK",
 }
 
-ARCHITECTURE_SOURCE_COMMIT = "34c42ebb24b69098159ddccbbcae981d0abe74af"
+ARCHITECTURE_SOURCE_COMMIT = "5411106481dd843f754dc6a86f7371e1468610fc"
+REPLAY_FAILURE_CONTRACT_SOURCE_COMMIT = "34c42ebb24b69098159ddccbbcae981d0abe74af"
 REPLAY_COMPATIBILITY_YAML = "contracts/replay-compatibility.yaml"
 REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
 REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
@@ -37,8 +39,8 @@ REPLAY_FAILURE_RECORD_FIXTURE = "tests/fixtures/replay_failure_record_minimal.js
 REPLAY_FAILURE_MAPPING_MODULE = "src/zovark_runtime/replay_failure_mapping.py"
 REPLAY_FAILURE_RECORDING_MODULE = "src/zovark_runtime/replay_failure_recording.py"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
-    REPLAY_COMPATIBILITY_YAML: "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
-    REPLAY_COMPATIBILITY_SCHEMA: "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
+    REPLAY_COMPATIBILITY_YAML: "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
+    REPLAY_COMPATIBILITY_SCHEMA: "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
 }
 REPLAY_FAILURE_RECORD_SOURCE_HASHES = {
     REPLAY_FAILURE_RECORD_SCHEMA: "55e867373d5094f4aae91acd8fc524f6178664fcf64f1a4fa30b9e90b248b2f1",
@@ -187,10 +189,20 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
         _assert_repo_file_exists(rel_path)
         assert _sha256(rel_path) == expected_hash
 
+    replay_compatibility_row_item = _item_by_marker(checklist, "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK")
+    assert replay_compatibility_row_item["test_file_path"] == "tests/test_replay_compatibility_contract.py"
+    assert replay_compatibility_row_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    assert replay_compatibility_row_item["schema_artifact_path"] == REPLAY_COMPATIBILITY_SCHEMA
+    assert replay_compatibility_row_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
+    assert replay_compatibility_row_item["source_hashes"] == REPLAY_COMPATIBILITY_SOURCE_HASHES
+    for rel_path, expected_hash in REPLAY_COMPATIBILITY_SOURCE_HASHES.items():
+        _assert_repo_file_exists(rel_path)
+        assert _sha256(rel_path) == expected_hash
+
     replay_failure_item = _item_by_marker(checklist, "REPLAY_FAILURE_RECORD_SCHEMA_OK")
     assert replay_failure_item["test_file_path"] == "tests/test_replay_failure_record_contract.py"
     assert replay_failure_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
-    assert replay_failure_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
+    assert replay_failure_item["architecture_source_commit"] == REPLAY_FAILURE_CONTRACT_SOURCE_COMMIT
     assert replay_failure_item["source_hashes"] == REPLAY_FAILURE_RECORD_SOURCE_HASHES
     for rel_path, expected_hash in REPLAY_FAILURE_RECORD_SOURCE_HASHES.items():
         _assert_repo_file_exists(rel_path)
@@ -221,11 +233,13 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
     assert coverage_item["status"] == "deferred"
     assert "coverage" in coverage_item["deferred_reason"]
+    assert "row/outcome semantics are imported" in coverage_item["deferred_reason"]
     assert "ADR-0047" in coverage_item["architecture_authority"]
     assert "INV-036" in coverage_item["architecture_authority"]
     assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
-    assert "matrix-row coverage proof" in coverage_item["authority_required"]
+    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57" in coverage_item["architecture_authority"]
+    assert "matrix-row mapping proof" in coverage_item["authority_required"]
 
     assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)
 

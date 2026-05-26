@@ -8,9 +8,10 @@ Status: provenance note for the Phase 0 runtime skeleton.
 - Architecture source ref: `main`
 - Architecture source tag: none for the current copied snapshot. The
   `v3.2.5.0-baseline-consolidated` tag predates the VerdictInput/ReplayRecord
-  contract addition and the replay failure contract.
+  contract addition, the replay failure contract, and the replay compatibility
+  row coverage contract.
 - Architecture source commit:
-  `34c42ebb24b69098159ddccbbcae981d0abe74af`
+  `5411106481dd843f754dc6a86f7371e1468610fc`
 
 ## Baseline Inventory
 

@@ -10,7 +10,8 @@
     "tool_catalog",
     "adapter_catalog",
     "model_artifacts",
-    "structured_failure_codes"
+    "structured_failure_codes",
+    "failure_outcome_rows"
   ],
   "additionalProperties": false,
   "properties": {
@@ -116,6 +117,15 @@
     },
     "historical_catalogs_root": {
       "type": "string"
+    },
+    "failure_outcome_rows": {
+      "type": "array",
+      "description": "Machine-readable architecture authority for mapping canonical replay failure records to compatibility matrix outcome rows. This does not claim runtime coverage.",
+      "items": {
+        "$ref": "#/$defs/failure_outcome_row"
+      },
+      "minItems": 1,
+      "maxItems": 64
     }
   },
   "$defs": {
@@ -186,6 +196,71 @@
         },
         "notes": {
           "type": "string"
+        }
+      }
+    },
+    "failure_outcome_row": {
+      "type": "object",
+      "required": [
+        "row_id",
+        "compatibility_dimension",
+        "component",
+        "failure_codes",
+        "outcome",
+        "runtime_evidence_required"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "row_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+          "description": "Stable architecture row identifier for future runtime mapping evidence."
+        },
+        "compatibility_dimension": {
+          "$ref": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json#/$defs/ReplayFailureCategory"
+        },
+        "component": {
+          "$ref": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json#/$defs/ReplayFailureComponent"
+        },
+        "failure_codes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json#/$defs/ReplayFailureCode"
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "fail_closed"
+          ]
+        },
+        "runtime_evidence_required": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "canonical_replay_failure_record",
+              "failure_code",
+              "component",
+              "field_path",
+              "expected_hash",
+              "observed_hash",
+              "expected_version",
+              "observed_version"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 256
         }
       }
     }
