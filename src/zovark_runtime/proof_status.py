@@ -165,7 +165,7 @@ PROOF_CHAIN_CHECKLIST = [
     {
         "id": "runtime_replay_compatibility_coverage_mapping",
         "status": "deferred",
-        "deferred_reason": "runtime imports and validates the replay compatibility matrix contract but does not yet map local validation cases to architecture-defined matrix rows",
+        "deferred_reason": "runtime imports and validates the replay compatibility matrix contract but replay compatibility coverage mapping from local validation cases to architecture-defined matrix rows remains deferred",
         "milestone_or_queue_position": "after canonical replay failure-code/failure-record authority is defined",
         "architecture_authority": [
             "ADR-0047",
