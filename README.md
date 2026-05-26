@@ -23,6 +23,10 @@ No runtime product exists yet.
 - Copied `verdict_input.schema.json` and `replay_record.schema.json` for
   future deterministic verdict/replay fixture validation. They are not
   runtime-enforced yet.
+- Copied `replay-compatibility.yaml` and
+  `replay-compatibility.schema.json` for local validation of the architecture
+  replay compatibility matrix contract. This is not replay coverage mapping or
+  runtime enforcement.
 - Architecture baseline inventory: 25 binding ADRs plus ADR-0043
   proposed/pending founder sign-off, 39 invariants, 25 authoritative schemas,
   and replay compatibility contract `architecture/replay-compatibility.yaml`.

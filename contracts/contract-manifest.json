@@ -31,6 +31,22 @@
       "note": "Copied from zovark-architecture v3.2.5.0-baseline-consolidated; canonical verdict schema dependency for future verdict fixture validation. Not runtime-enforced yet."
     },
     {
+      "path": "contracts/replay-compatibility.schema.json",
+      "kind": "schema",
+      "sha256": "c5b0f03ae238a3fe34e63e094c4112e1fffb4187b217d85d94ace01e4fabcbb1",
+      "status": "draft-architecture-contract",
+      "source_commit": "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61",
+      "note": "Copied from zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61; canonical replay compatibility configuration schema. Not runtime-enforced yet."
+    },
+    {
+      "path": "contracts/replay-compatibility.yaml",
+      "kind": "data-artifact",
+      "sha256": "6be9b34ac35dffde387acb46abfefe2bd7a94ffcf8512c28585f6648b4040e98",
+      "status": "draft-architecture-contract",
+      "source_commit": "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61",
+      "note": "Copied from zovark-architecture main commit fa58bb16cf0e3209ba8c3310eabbac40f95b6b61; canonical replay compatibility matrix data artifact. Not runtime-enforced yet."
+    },
+    {
       "path": "contracts/replay_record.schema.json",
       "sha256": "7c26eb44e37dbefd667bd7e4df3a0afd3f43c812ab7061868184cbd7a4e6994e",
       "status": "draft-architecture-contract",

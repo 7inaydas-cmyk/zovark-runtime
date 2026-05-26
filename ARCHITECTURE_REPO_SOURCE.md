@@ -30,6 +30,8 @@ Only the following contracts were copied:
 - `contracts/memory-retrieval-request-v1.schema.json`
 - `contracts/memory-retrieval-result-v1.schema.json`
 - `contracts/recommended_action.schema.json`
+- `contracts/replay-compatibility.schema.json`
+- `contracts/replay-compatibility.yaml`
 - `contracts/replay_record.schema.json`
 - `contracts/scanner_finding_envelope.schema.json`
 - `contracts/verdict_envelope.schema.json`

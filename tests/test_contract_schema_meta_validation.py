@@ -9,6 +9,7 @@ import pytest
 jsonschema = pytest.importorskip("jsonschema")
 Draft202012Validator = jsonschema.Draft202012Validator
 RefResolver = jsonschema.validators.RefResolver
+validator_for = jsonschema.validators.validator_for
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +17,19 @@ CONTRACTS = ROOT / "contracts"
 VERDICT_SCHEMA = CONTRACTS / "verdict_envelope.schema.json"
 VERDICT_INPUT_SCHEMA = CONTRACTS / "verdict_input.schema.json"
 REPLAY_RECORD_SCHEMA = CONTRACTS / "replay_record.schema.json"
+REPLAY_COMPATIBILITY_SCHEMA = CONTRACTS / "replay-compatibility.schema.json"
+EXPECTED_SCHEMA_FILES = {
+    "context-compaction-envelope-v1.schema.json",
+    "finding.schema.json",
+    "memory-retrieval-request-v1.schema.json",
+    "memory-retrieval-result-v1.schema.json",
+    "recommended_action.schema.json",
+    "replay-compatibility.schema.json",
+    "replay_record.schema.json",
+    "scanner_finding_envelope.schema.json",
+    "verdict_envelope.schema.json",
+    "verdict_input.schema.json",
+}
 
 
 def load_contract_schema(schema_path: Path) -> dict:
@@ -34,19 +48,21 @@ def iter_refs(node: object):
             yield from iter_refs(value)
 
 
-def test_contract_schemas_validate_against_draft_2020_12_metaschema() -> None:
+def test_contract_schemas_validate_against_declared_metaschema() -> None:
     schema_paths = sorted(CONTRACTS.glob("*.schema.json"))
 
-    assert len(schema_paths) == 9
+    assert {path.name for path in schema_paths} == EXPECTED_SCHEMA_FILES
     assert CONTRACTS / "scanner_finding_envelope.schema.json" in schema_paths
     assert CONTRACTS / "finding.schema.json" in schema_paths
     assert CONTRACTS / "recommended_action.schema.json" in schema_paths
+    assert REPLAY_COMPATIBILITY_SCHEMA in schema_paths
     assert VERDICT_SCHEMA in schema_paths
     assert VERDICT_INPUT_SCHEMA in schema_paths
     assert REPLAY_RECORD_SCHEMA in schema_paths
 
     for schema_path in schema_paths:
-        Draft202012Validator.check_schema(load_contract_schema(schema_path))
+        schema = load_contract_schema(schema_path)
+        validator_for(schema).check_schema(schema)
 
 
 def test_contract_schema_refs_resolve_to_local_contracts() -> None:
@@ -58,7 +74,12 @@ def test_contract_schema_refs_resolve_to_local_contracts() -> None:
             schemas_by_id[schema_id.split("#", 1)[0]] = schema
 
     missing_refs = []
-    for schema_path in [VERDICT_SCHEMA, VERDICT_INPUT_SCHEMA, REPLAY_RECORD_SCHEMA]:
+    for schema_path in [
+        VERDICT_SCHEMA,
+        VERDICT_INPUT_SCHEMA,
+        REPLAY_RECORD_SCHEMA,
+        REPLAY_COMPATIBILITY_SCHEMA,
+    ]:
         schema = load_contract_schema(schema_path)
         resolver = RefResolver.from_schema(schema, store=schemas_by_id)
         for ref in iter_refs(schema):

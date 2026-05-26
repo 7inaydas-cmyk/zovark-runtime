@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zovark.io/schemas/replay-compatibility.schema.json",
+  "title": "Zovark replay compatibility matrix",
+  "description": "Schema for architecture/replay-compatibility.yaml. Established by ADR-0026.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "record_schema",
+    "tool_catalog",
+    "adapter_catalog",
+    "model_artifacts",
+    "structured_failure_codes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+(?:\\.\\d+)?$"
+    },
+    "record_schema": {
+      "type": "object",
+      "patternProperties": {
+        "^\\d+\\.\\d+\\.\\d+$": {
+          "$ref": "#/$defs/version_entry"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Version-keyed bounded compatibility map; keys are semantic versions.",
+      "maxProperties": 64
+    },
+    "tool_catalog": {
+      "type": "object",
+      "patternProperties": {
+        "^\\d+\\.\\d+\\.\\d+$": {
+          "$ref": "#/$defs/catalog_entry"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Version-keyed bounded compatibility map; keys are semantic versions.",
+      "maxProperties": 64
+    },
+    "adapter_catalog": {
+      "type": "object",
+      "patternProperties": {
+        "^\\d+\\.\\d+\\.\\d+$": {
+          "$ref": "#/$defs/adapter_catalog_entry"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Version-keyed bounded compatibility map; keys are semantic versions.",
+      "maxProperties": 64
+    },
+    "model_artifacts": {
+      "type": "object",
+      "required": [
+        "replay_modes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "replay_modes": {
+          "type": "object",
+          "required": [
+            "mode_1_recorded_io_only",
+            "mode_2_forensic_reexecution"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "mode_1_recorded_io_only": {
+              "type": "object",
+              "required": [
+                "model_digest_required"
+              ],
+              "properties": {
+                "model_digest_required": {
+                  "const": false
+                },
+                "model_digest_recorded_for_provenance": {
+                  "type": "boolean"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "mode_2_forensic_reexecution": {
+              "type": "object",
+              "required": [
+                "model_digest_required"
+              ],
+              "properties": {
+                "model_digest_required": {
+                  "const": true
+                },
+                "historical_runtime_container_required": {
+                  "type": "boolean"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    },
+    "structured_failure_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^REPLAY_[A-Z_]+$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "historical_catalogs_root": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "version_entry": {
+      "type": "object",
+      "required": [
+        "replayable_under"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "replayable_under": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+(?:\\.\\d+|\\.x)$"
+          },
+          "minItems": 1
+        },
+        "migration_required": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "catalog_entry": {
+      "type": "object",
+      "required": [
+        "replayable_under"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "replayable_under": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+(?:\\.\\d+|\\.x)$"
+          }
+        },
+        "removed_tools": {
+          "type": "array"
+        },
+        "added_tools_after_v1.0.0": {
+          "type": "array"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "adapter_catalog_entry": {
+      "type": "object",
+      "required": [
+        "replayable_under"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "replayable_under": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+(?:\\.\\d+|\\.x)$"
+          }
+        },
+        "breaking_changes": {
+          "type": "array"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
