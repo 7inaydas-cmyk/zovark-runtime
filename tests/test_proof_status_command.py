@@ -22,15 +22,20 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_VALIDATION_PROOF_OK",
     "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
     "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
+    "REPLAY_FAILURE_RECORD_SCHEMA_OK",
     "CONTRACT_METASCHEMA_OK",
 }
 
-ARCHITECTURE_SOURCE_COMMIT = "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61"
+ARCHITECTURE_SOURCE_COMMIT = "34c42ebb24b69098159ddccbbcae981d0abe74af"
 REPLAY_COMPATIBILITY_YAML = "contracts/replay-compatibility.yaml"
 REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
+REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
-    REPLAY_COMPATIBILITY_YAML: "6be9b34ac35dffde387acb46abfefe2bd7a94ffcf8512c28585f6648b4040e98",
-    REPLAY_COMPATIBILITY_SCHEMA: "c5b0f03ae238a3fe34e63e094c4112e1fffb4187b217d85d94ace01e4fabcbb1",
+    REPLAY_COMPATIBILITY_YAML: "be265c93bc9e5f1ea35c6edd3a6bba1b6a44822dae7b807985a5b058fddf0c03",
+    REPLAY_COMPATIBILITY_SCHEMA: "11e6bcf10d54e0e07b51632fa3cc17f8e45311e50be4a4823ca3d53cfa863d92",
+}
+REPLAY_FAILURE_RECORD_SOURCE_HASHES = {
+    REPLAY_FAILURE_RECORD_SCHEMA: "55e867373d5094f4aae91acd8fc524f6178664fcf64f1a4fa30b9e90b248b2f1",
 }
 
 
@@ -73,14 +78,14 @@ def test_cli_proof_status_reports_architecture_baseline(capsys) -> None:
     assert payload["architecture_baseline"] == {
         "source_ref": "main",
         "source_tag": None,
-        "source_commit": "fa58bb16cf0e3209ba8c3310eabbac40f95b6b61",
+        "source_commit": ARCHITECTURE_SOURCE_COMMIT,
     }
     assert payload["baseline_inventory"] == {
         "adr_files": 26,
         "binding_adrs": 25,
         "proposed_pending_adrs": ["ADR-0043"],
         "invariants": 39,
-        "authoritative_schemas": 25,
+        "authoritative_schemas": 26,
         "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
     }
 
@@ -158,6 +163,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
 
     satisfied_markers = {item["proof_marker"] for item in checklist if item["status"] == "satisfied"}
     assert satisfied_markers == EXPECTED_PROOF_CHAIN_MARKERS
+    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in json.dumps(payload)
 
     contract_count_item = _item_by_marker(checklist, "CONTRACT_METASCHEMA_OK")
     assert contract_count_item["expected_count"]["value"] == len(list(CONTRACTS.glob("*.schema.json")))
@@ -175,18 +181,31 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
         _assert_repo_file_exists(rel_path)
         assert _sha256(rel_path) == expected_hash
 
+    replay_failure_item = _item_by_marker(checklist, "REPLAY_FAILURE_RECORD_SCHEMA_OK")
+    assert replay_failure_item["test_file_path"] == "tests/test_replay_failure_record_contract.py"
+    assert replay_failure_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    assert replay_failure_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
+    assert replay_failure_item["source_hashes"] == REPLAY_FAILURE_RECORD_SOURCE_HASHES
+    for rel_path, expected_hash in REPLAY_FAILURE_RECORD_SOURCE_HASHES.items():
+        _assert_repo_file_exists(rel_path)
+        assert _sha256(rel_path) == expected_hash
+
     coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_mapping")
     assert coverage_item["status"] == "deferred"
     assert "coverage" in coverage_item["deferred_reason"]
     assert "ADR-0047" in coverage_item["architecture_authority"]
     assert "INV-036" in coverage_item["architecture_authority"]
+    assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
+    assert "runtime mapping proof" in coverage_item["authority_required"]
 
-    failure_record_item = next(item for item in checklist if item["id"] == "canonical_replay_failure_record_alignment")
+    failure_record_item = next(item for item in checklist if item["id"] == "runtime_replay_failure_code_mapping")
     assert failure_record_item["status"] == "deferred"
     assert "ADR-0047" in failure_record_item["architecture_authority"]
     assert "INV-036" in failure_record_item["architecture_authority"]
+    assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in failure_record_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in failure_record_item["architecture_authority"]
+    assert "runtime mapping proof" in failure_record_item["authority_required"]
 
     print("PROOF_CHAIN_CHECKLIST_OK")
 

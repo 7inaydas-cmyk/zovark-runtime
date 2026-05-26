@@ -130,14 +130,10 @@
     "structured_failure_codes": {
       "type": "array",
       "description": "Replay failure codes permitted by the committed replay compatibility contract.",
-      "maxItems": 8,
+      "maxItems": 16,
       "uniqueItems": true,
       "items": {
-        "type": "string",
-        "enum": [
-          "REPLAY_TOOL_RETIRED",
-          "REPLAY_SCHEMA_INCOMPATIBLE"
-        ]
+        "$ref": "https://schemas.zovark.io/replay_failure_record/v1.0.0/schema.json#/$defs/ReplayFailureCode"
       }
     }
   },

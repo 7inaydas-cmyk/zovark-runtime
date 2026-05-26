@@ -29,6 +29,14 @@ model_artifacts:
       historical_runtime_container_required: true
       notes: "Forensic re-execution is future-scoped and requires historical runtime artifacts."
 structured_failure_codes:
-  - REPLAY_TOOL_RETIRED
   - REPLAY_SCHEMA_INCOMPATIBLE
+  - REPLAY_RECORD_FORMAT_INCOMPATIBLE
+  - REPLAY_TOOL_RETIRED
+  - REPLAY_TOOL_CATALOG_MISMATCH
+  - REPLAY_VERDICT_INPUT_HASH_MISMATCH
+  - REPLAY_VERDICT_ENVELOPE_HASH_MISMATCH
+  - REPLAY_MODEL_VERSION_MISMATCH
+  - REPLAY_DECODING_PARAMS_MISMATCH
+  - REPLAY_PROMPT_HASH_MISSING
+  - REPLAY_PROMPT_HASH_MISMATCH
 historical_catalogs_root: "architecture/replay/catalogs"
