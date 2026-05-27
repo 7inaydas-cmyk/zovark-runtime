@@ -14,6 +14,7 @@ from zovark_runtime.replay_failure_mapping import (
     REPLAY_PROMPT_HASH_MISSING,
     REPLAY_RECORD_FORMAT_INCOMPATIBLE,
     REPLAY_TOOL_CATALOG_MISMATCH,
+    REPLAY_TOOL_RETIRED,
     canonical_replay_failure_code,
     canonical_replay_failure_code_for_local_result,
 )
@@ -24,10 +25,13 @@ from zovark_runtime.replay_validation import (
     SCHEMA_INCOMPATIBLE,
     TENANT_INVESTIGATION_MISMATCH,
     TOOL_CATALOG_VERSION_MISMATCH,
+    TOOL_RETIRED,
+    TOOL_RETIRED_DETAIL,
     VERDICT_ENVELOPE_HASH_MISMATCH,
     VERDICT_INPUT_HASH_MISMATCH,
     VERDICT_INPUT_MISMATCH,
     ReplayValidationResult,
+    canonical_sha256_hex,
     validate_replay_record,
 )
 
@@ -51,6 +55,7 @@ EXPECTED_CANONICAL_CODES_BY_CASE_ID = {
     "verdict_input_hash_mismatch": VERDICT_INPUT_HASH_MISMATCH,
     "verdict_envelope_hash_mismatch": VERDICT_ENVELOPE_HASH_MISMATCH,
     "tool_catalog_version_mismatch": REPLAY_TOOL_CATALOG_MISMATCH,
+    "tool_retired": REPLAY_TOOL_RETIRED,
     "model_version_mismatch": MODEL_VERSION_MISMATCH,
     "decoding_params_mismatch": REPLAY_DECODING_PARAMS_MISMATCH,
     "prompt_hash_empty": PROMPT_HASH_MISMATCH,
@@ -88,6 +93,29 @@ def _expected_verdict_envelope() -> dict[str, Any]:
     return _load_json(EXPECTED_VERDICT_FIXTURE)
 
 
+def _apply_case(
+    replay_record: dict[str, Any],
+    expected_verdict_input: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    for key, value in case.get("updates", {}).items():
+        replay_record[key] = copy.deepcopy(value)
+
+    field_name = case.get("field_name")
+    if isinstance(field_name, str):
+        if case.get("delete"):
+            del replay_record[field_name]
+        else:
+            replay_record[field_name] = copy.deepcopy(case["value"])
+
+    verdict_input_updates = case.get("expected_verdict_input_updates", {})
+    for key, value in verdict_input_updates.items():
+        expected_verdict_input[key] = copy.deepcopy(value)
+        replay_record["verdict_input"][key] = copy.deepcopy(value)
+    if verdict_input_updates:
+        replay_record["verdict_input_hash"] = canonical_sha256_hex(expected_verdict_input)
+
+
 def _failure_code_enum() -> tuple[str, ...]:
     schema = _load_json(REPLAY_FAILURE_SCHEMA)
     return tuple(schema["$defs"]["ReplayFailureCode"]["enum"])
@@ -100,13 +128,10 @@ def _replay_compatibility_codes() -> tuple[str, ...]:
 
 def _result_for_case(case: dict[str, Any]) -> ReplayValidationResult:
     replay_record = copy.deepcopy(_valid_replay_record())
-    field_name = case["field_name"]
-    if case.get("delete"):
-        del replay_record[field_name]
-    else:
-        replay_record[field_name] = case["value"]
+    expected_verdict_input = _expected_verdict_input()
+    _apply_case(replay_record, expected_verdict_input, case)
 
-    return validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
+    return validate_replay_record(replay_record, expected_verdict_input, _expected_verdict_envelope())
 
 
 def test_current_fail_closed_cases_map_to_canonical_failure_codes() -> None:
@@ -114,7 +139,7 @@ def test_current_fail_closed_cases_map_to_canonical_failure_codes() -> None:
     canonical_enum = _failure_code_enum()
     compatibility_codes = _replay_compatibility_codes()
 
-    assert len(cases) == 10
+    assert len(cases) == 11
     assert {case["id"] for case in cases} == set(EXPECTED_CANONICAL_CODES_BY_CASE_ID)
 
     for case in cases:
@@ -172,6 +197,13 @@ def test_mapping_disambiguates_overloaded_local_result_codes() -> None:
             "decoding parameters differ from verdict input",
         )
         == REPLAY_DECODING_PARAMS_MISMATCH
+    )
+    assert (
+        canonical_replay_failure_code_for_local_result(
+            TOOL_RETIRED,
+            TOOL_RETIRED_DETAIL,
+        )
+        == REPLAY_TOOL_RETIRED
     )
 
 

@@ -10,6 +10,7 @@ from zovark_runtime.replay_failure_mapping import (
     REPLAY_PROMPT_HASH_MISSING,
     REPLAY_RECORD_FORMAT_INCOMPATIBLE,
     REPLAY_TOOL_CATALOG_MISMATCH,
+    REPLAY_TOOL_RETIRED,
     canonical_replay_failure_code,
 )
 from zovark_runtime.replay_validation import (
@@ -65,6 +66,12 @@ REPLAY_FAILURE_RECORD_METADATA_BY_CODE = {
         "field_path": "tool_catalog_version",
         "observed_version_field": "tool_catalog_version",
         "fail_closed_reason": "Replay tool catalog version differs from the canonical verdict input.",
+    },
+    REPLAY_TOOL_RETIRED: {
+        "failure_category": "tool_compatibility",
+        "component": "tool_catalog_entry",
+        "field_path": "tool_io",
+        "fail_closed_reason": "Replay tool identity is retired under the current catalog authority.",
     },
     MODEL_VERSION_MISMATCH: {
         "failure_category": "model_compatibility",
