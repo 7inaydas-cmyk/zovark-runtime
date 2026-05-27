@@ -102,26 +102,44 @@
       "test_file_path": "tests/test_replay_validation.py"
     },
     {
-      "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
+      "architecture_source_commit": "7bad0bb5ac5ac99dec007831dd67352f47255caa",
       "id": "replay_compatibility_matrix_schema_validation",
       "proof_marker": "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
       "schema_artifact_path": "contracts/replay-compatibility.schema.json",
       "source_hashes": {
-        "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
-        "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee"
+        "contracts/replay-compatibility.schema.json": "6705c94a99f33528e7737e776f3de4ea7a830e00ad94a8ff0464281631525a7a",
+        "contracts/replay-compatibility.yaml": "4cd82e07ea8cdd8e28f5a22fd6c38fb38c966ef9b2e672baaec954e1bdd6350a"
       },
       "status": "satisfied",
       "test_file_path": "tests/test_replay_compatibility_contract.py",
       "yaml_artifact_path": "contracts/replay-compatibility.yaml"
     },
     {
-      "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
+      "architecture_source_commit": "7bad0bb5ac5ac99dec007831dd67352f47255caa",
       "id": "replay_compatibility_row_coverage_schema_validation",
       "proof_marker": "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK",
       "schema_artifact_path": "contracts/replay-compatibility.schema.json",
       "source_hashes": {
-        "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
-        "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee"
+        "contracts/replay-compatibility.schema.json": "6705c94a99f33528e7737e776f3de4ea7a830e00ad94a8ff0464281631525a7a",
+        "contracts/replay-compatibility.yaml": "4cd82e07ea8cdd8e28f5a22fd6c38fb38c966ef9b2e672baaec954e1bdd6350a"
+      },
+      "status": "satisfied",
+      "test_file_path": "tests/test_replay_compatibility_contract.py",
+      "yaml_artifact_path": "contracts/replay-compatibility.yaml"
+    },
+    {
+      "architecture_source_commit": "7bad0bb5ac5ac99dec007831dd67352f47255caa",
+      "catalog_artifact_paths": [
+        "contracts/replay/catalogs/1.0.0.yaml",
+        "contracts/replay/catalogs/1.1.0.yaml"
+      ],
+      "id": "replay_tool_catalog_authority_import",
+      "proof_marker": "REPLAY_TOOL_CATALOG_AUTHORITY_IMPORT_OK",
+      "schema_artifact_path": "contracts/replay_tool_catalog.schema.json",
+      "source_hashes": {
+        "contracts/replay/catalogs/1.0.0.yaml": "70282cfe833c558f9444edab0c15fe8c068d46ccaff8459059885848c813a236",
+        "contracts/replay/catalogs/1.1.0.yaml": "022728df50ec7e24b1263f1cb2632089a917ac1cc15bfac44e4c2e305bff8963",
+        "contracts/replay_tool_catalog.schema.json": "ac6bbc1b1a521962626e3a794547e3d0ba4b5aec4ac3e710553ebb71528ac2e0"
       },
       "status": "satisfied",
       "test_file_path": "tests/test_replay_compatibility_contract.py",

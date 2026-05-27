@@ -19,6 +19,7 @@ VERDICT_INPUT_SCHEMA = CONTRACTS / "verdict_input.schema.json"
 REPLAY_RECORD_SCHEMA = CONTRACTS / "replay_record.schema.json"
 REPLAY_COMPATIBILITY_SCHEMA = CONTRACTS / "replay-compatibility.schema.json"
 REPLAY_FAILURE_RECORD_SCHEMA = CONTRACTS / "replay_failure_record.schema.json"
+REPLAY_TOOL_CATALOG_SCHEMA = CONTRACTS / "replay_tool_catalog.schema.json"
 EXPECTED_SCHEMA_FILES = {
     "context-compaction-envelope-v1.schema.json",
     "finding.schema.json",
@@ -28,6 +29,7 @@ EXPECTED_SCHEMA_FILES = {
     "replay-compatibility.schema.json",
     "replay_failure_record.schema.json",
     "replay_record.schema.json",
+    "replay_tool_catalog.schema.json",
     "scanner_finding_envelope.schema.json",
     "verdict_envelope.schema.json",
     "verdict_input.schema.json",
@@ -59,6 +61,7 @@ def test_contract_schemas_validate_against_declared_metaschema() -> None:
     assert CONTRACTS / "recommended_action.schema.json" in schema_paths
     assert REPLAY_COMPATIBILITY_SCHEMA in schema_paths
     assert REPLAY_FAILURE_RECORD_SCHEMA in schema_paths
+    assert REPLAY_TOOL_CATALOG_SCHEMA in schema_paths
     assert VERDICT_SCHEMA in schema_paths
     assert VERDICT_INPUT_SCHEMA in schema_paths
     assert REPLAY_RECORD_SCHEMA in schema_paths
@@ -83,6 +86,7 @@ def test_contract_schema_refs_resolve_to_local_contracts() -> None:
         REPLAY_RECORD_SCHEMA,
         REPLAY_COMPATIBILITY_SCHEMA,
         REPLAY_FAILURE_RECORD_SCHEMA,
+        REPLAY_TOOL_CATALOG_SCHEMA,
     ]:
         schema = load_contract_schema(schema_path)
         resolver = RefResolver.from_schema(schema, store=schemas_by_id)

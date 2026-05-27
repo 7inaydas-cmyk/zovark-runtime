@@ -1,4 +1,5 @@
 schema_version: "1.0.0"
+current_tool_catalog_version: "1.1.0"
 record_schema:
   "1.0.0":
     replayable_under:
@@ -7,11 +8,25 @@ record_schema:
     notes: "Initial consolidated replay record compatibility range."
 tool_catalog:
   "1.0.0":
+    catalog_artifact: "architecture/replay/catalogs/1.0.0.yaml"
     replayable_under:
       - "1.0.x"
     removed_tools: []
     added_tools_after_v1.0.0: []
     notes: "Initial consolidated tool catalog compatibility range."
+  "1.1.0":
+    catalog_artifact: "architecture/replay/catalogs/1.1.0.yaml"
+    replayable_under:
+      - "1.1.x"
+    removed_tools:
+      - tool_name: synthetic-retired-tool
+        tool_version: "1.0.0"
+        last_active_catalog_version: "1.0.0"
+        retired_in_catalog_version: "1.1.0"
+        failure_code: REPLAY_TOOL_RETIRED
+        row_id: tool_compatibility.tool_retired
+    added_tools_after_v1.0.0: []
+    notes: "Current replay tool catalog authority for synthetic retired-tool proof."
 adapter_catalog:
   "1.0.0":
     replayable_under:

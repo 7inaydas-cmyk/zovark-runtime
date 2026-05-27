@@ -7,13 +7,14 @@
         "architecture/replay-compatibility.yaml",
         "architecture/blueprint/schemas/replay_failure_record.schema.json",
         "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
-        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57"
+        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
+        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/59"
       ],
       "authority_required": "full coverage proof must cover REPLAY_TOOL_RETIRED or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
       "completion_note": "runtime is not claiming proof-loop completion",
-      "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch, but full replay compatibility coverage remains deferred because REPLAY_TOOL_RETIRED is not represented by current runtime validation",
+      "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch, and replay tool catalog retirement authority is imported, but full replay compatibility coverage remains deferred because REPLAY_TOOL_RETIRED runtime behavior is not yet proven",
       "id": "runtime_replay_compatibility_coverage_claim",
-      "milestone_or_queue_position": "after REPLAY_TOOL_RETIRED authority and runtime behavior are scoped and proven",
+      "milestone_or_queue_position": "after REPLAY_TOOL_RETIRED runtime behavior is proven",
       "status": "deferred"
     },
     {

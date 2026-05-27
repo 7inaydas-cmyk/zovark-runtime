@@ -31,6 +31,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
     "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
     "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK",
+    "REPLAY_TOOL_CATALOG_AUTHORITY_IMPORT_OK",
     "REPLAY_FAILURE_RECORD_SCHEMA_OK",
     "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
     "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
@@ -40,11 +41,14 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "CONTRACT_METASCHEMA_OK",
 }
 
-ARCHITECTURE_SOURCE_COMMIT = "5411106481dd843f754dc6a86f7371e1468610fc"
+ARCHITECTURE_SOURCE_COMMIT = "7bad0bb5ac5ac99dec007831dd67352f47255caa"
 REPLAY_FAILURE_CONTRACT_SOURCE_COMMIT = "34c42ebb24b69098159ddccbbcae981d0abe74af"
 REPLAY_COMPATIBILITY_YAML = "contracts/replay-compatibility.yaml"
 REPLAY_COMPATIBILITY_SCHEMA = "contracts/replay-compatibility.schema.json"
 REPLAY_FAILURE_RECORD_SCHEMA = "contracts/replay_failure_record.schema.json"
+REPLAY_TOOL_CATALOG_SCHEMA = "contracts/replay_tool_catalog.schema.json"
+REPLAY_TOOL_CATALOG_1_0_0 = "contracts/replay/catalogs/1.0.0.yaml"
+REPLAY_TOOL_CATALOG_1_1_0 = "contracts/replay/catalogs/1.1.0.yaml"
 REPLAY_FAILURE_RECORD_FIXTURE = "tests/fixtures/replay_failure_record_minimal.json"
 REPLAY_FAILURE_MAPPING_MODULE = "src/zovark_runtime/replay_failure_mapping.py"
 REPLAY_FAILURE_RECORDING_MODULE = "src/zovark_runtime/replay_failure_recording.py"
@@ -56,11 +60,16 @@ REPLAY_COMPATIBILITY_MAPPING_TEST = "tests/test_replay_compatibility_mapping.py"
 DECODING_PARAMS_CANONICAL_CODE = "REPLAY_DECODING_PARAMS_MISMATCH"
 DECODING_PARAMS_ROW_ID = "model_compatibility.decoding_params_mismatch"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
-    REPLAY_COMPATIBILITY_YAML: "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
-    REPLAY_COMPATIBILITY_SCHEMA: "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
+    REPLAY_COMPATIBILITY_YAML: "4cd82e07ea8cdd8e28f5a22fd6c38fb38c966ef9b2e672baaec954e1bdd6350a",
+    REPLAY_COMPATIBILITY_SCHEMA: "6705c94a99f33528e7737e776f3de4ea7a830e00ad94a8ff0464281631525a7a",
 }
 REPLAY_FAILURE_RECORD_SOURCE_HASHES = {
     REPLAY_FAILURE_RECORD_SCHEMA: "55e867373d5094f4aae91acd8fc524f6178664fcf64f1a4fa30b9e90b248b2f1",
+}
+REPLAY_TOOL_CATALOG_SOURCE_HASHES = {
+    REPLAY_TOOL_CATALOG_SCHEMA: "ac6bbc1b1a521962626e3a794547e3d0ba4b5aec4ac3e710553ebb71528ac2e0",
+    REPLAY_TOOL_CATALOG_1_0_0: "70282cfe833c558f9444edab0c15fe8c068d46ccaff8459059885848c813a236",
+    REPLAY_TOOL_CATALOG_1_1_0: "022728df50ec7e24b1263f1cb2632089a917ac1cc15bfac44e4c2e305bff8963",
 }
 
 
@@ -163,7 +172,7 @@ def test_cli_proof_status_reports_architecture_baseline(capsys) -> None:
         "binding_adrs": 25,
         "proposed_pending_adrs": ["ADR-0043"],
         "invariants": 39,
-        "authoritative_schemas": 26,
+        "authoritative_schemas": 27,
         "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
     }
 
@@ -217,6 +226,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
                 "fixture_paths",
                 "yaml_artifact_path",
                 "schema_artifact_path",
+                "catalog_artifact_paths",
                 "related_test_file_paths",
                 "expected_count",
             }
@@ -230,6 +240,8 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
                 _assert_repo_file_exists(item["yaml_artifact_path"])
             if "schema_artifact_path" in item:
                 _assert_repo_file_exists(item["schema_artifact_path"])
+            for rel_path in item.get("catalog_artifact_paths", []):
+                _assert_repo_file_exists(rel_path)
             for rel_path in item.get("runtime_artifact_paths", []):
                 _assert_repo_file_exists(rel_path)
             for rel_path in item.get("contract_paths", []):
@@ -269,6 +281,20 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert replay_compatibility_row_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
     assert replay_compatibility_row_item["source_hashes"] == REPLAY_COMPATIBILITY_SOURCE_HASHES
     for rel_path, expected_hash in REPLAY_COMPATIBILITY_SOURCE_HASHES.items():
+        _assert_repo_file_exists(rel_path)
+        assert _sha256(rel_path) == expected_hash
+
+    replay_tool_catalog_item = _item_by_marker(checklist, "REPLAY_TOOL_CATALOG_AUTHORITY_IMPORT_OK")
+    assert replay_tool_catalog_item["test_file_path"] == "tests/test_replay_compatibility_contract.py"
+    assert replay_tool_catalog_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    assert replay_tool_catalog_item["schema_artifact_path"] == REPLAY_TOOL_CATALOG_SCHEMA
+    assert replay_tool_catalog_item["catalog_artifact_paths"] == [
+        REPLAY_TOOL_CATALOG_1_0_0,
+        REPLAY_TOOL_CATALOG_1_1_0,
+    ]
+    assert replay_tool_catalog_item["architecture_source_commit"] == ARCHITECTURE_SOURCE_COMMIT
+    assert replay_tool_catalog_item["source_hashes"] == REPLAY_TOOL_CATALOG_SOURCE_HASHES
+    for rel_path, expected_hash in REPLAY_TOOL_CATALOG_SOURCE_HASHES.items():
         _assert_repo_file_exists(rel_path)
         assert _sha256(rel_path) == expected_hash
 
@@ -341,6 +367,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57" in coverage_item["architecture_authority"]
+    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/59" in coverage_item["architecture_authority"]
     assert "REPLAY_TOOL_RETIRED" in coverage_item["authority_required"]
 
     assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)

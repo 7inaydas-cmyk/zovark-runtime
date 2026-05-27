@@ -1,7 +1,7 @@
 {
   "baseline_inventory": {
     "adr_files": 26,
-    "authoritative_schemas": 26,
+    "authoritative_schemas": 27,
     "binding_adrs": 25,
     "invariants": 39,
     "proposed_pending_adrs": [
