@@ -1,0 +1,93 @@
+{
+  "items": [
+    {
+      "architecture_authority": [
+        "ADR-0047",
+        "INV-036",
+        "architecture/replay-compatibility.yaml",
+        "architecture/blueprint/schemas/replay_failure_record.schema.json",
+        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
+        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57"
+      ],
+      "authority_required": "full coverage proof must cover REPLAY_TOOL_RETIRED or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch, but full replay compatibility coverage remains deferred because REPLAY_TOOL_RETIRED is not represented by current runtime validation",
+      "id": "runtime_replay_compatibility_coverage_claim",
+      "milestone_or_queue_position": "after REPLAY_TOOL_RETIRED authority and runtime behavior are scoped and proven",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "ADR-0046",
+        "INV-035",
+        "INV-039"
+      ],
+      "authority_required": "audit-chain runtime scope and storage semantics must be implemented separately",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "runtime does not emit audit-chain output from investigation state",
+      "id": "audit_chain_output",
+      "milestone_or_queue_position": "M5 / after runtime investigation state exists",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "PHASE_PLAN.md"
+      ],
+      "authority_required": "runtime investigation scope must be explicitly authorized before proof-status can treat it as proof-chain evidence",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "runtime investigation execution is not implemented",
+      "id": "runtime_investigation_execution",
+      "milestone_or_queue_position": "after proof-chain contract and fixture proofs; before end-to-end validation",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "PHASE_PLAN.md"
+      ],
+      "authority_required": "AlertForge contract and scenario execution scope must land separately",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "AlertForge scenario validation is not imported or executed by runtime",
+      "id": "alertforge_scenario_validation",
+      "milestone_or_queue_position": "after runtime investigation execution boundary is defined",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "ADR-0046",
+        "ADR-0052",
+        "INV-022"
+      ],
+      "authority_required": "benchmark harness and measured artifacts must land separately",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "benchmark proof is not meaningful before end-to-end validation exists",
+      "id": "benchmark_proof",
+      "milestone_or_queue_position": "PHASE_PLAN.md Phase 6",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "ADR-0052",
+        "INV-022",
+        "PHASE_PLAN.md"
+      ],
+      "authority_required": "external claim surfaces require separate architecture/product authorization and evidence",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "external claim surfaces are outside the current runtime proof chain",
+      "id": "dashboard_and_external_claims",
+      "milestone_or_queue_position": "after benchmark-backed evidence and explicit product scope",
+      "status": "deferred"
+    },
+    {
+      "architecture_authority": [
+        "ADR-0050",
+        "INV-022"
+      ],
+      "authority_required": "operational commitment scope requires separate architecture and evidence",
+      "completion_note": "runtime is not claiming proof-loop completion",
+      "deferred_reason": "operational workflows and commitments are outside this runtime proof repository state",
+      "id": "production_sla_compliance_workflows",
+      "milestone_or_queue_position": "not in current proof-chain queue",
+      "status": "deferred"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "baseline_inventory": {
+    "adr_files": 26,
+    "authoritative_schemas": 26,
+    "binding_adrs": 25,
+    "invariants": 39,
+    "proposed_pending_adrs": [
+      "ADR-0043"
+    ],
+    "replay_compatibility_contract": "architecture/replay-compatibility.yaml"
+  },
+  "deferred_capabilities": [
+    "bounded retrieval implementation",
+    "deterministic verdict/proof generation",
+    "AlertForge scenario validation",
+    "benchmark report script",
+    "autonomous-dispatch capability",
+    "customer/production rollout"
+  ],
+  "incomplete_reason": [
+    "deferred proof-chain items remain",
+    "runtime completion criteria are architecture-owned or not yet explicitly defined",
+    "readiness/product/production claims are not made"
+  ],
+  "proof_chain_checklist_scope": {
+    "completion_authority": "architecture-owned or undefined until explicitly specified",
+    "completion_claim": "not-claimed",
+    "completion_definition": "not-defined-by-runtime",
+    "proof_execution": "not-run-by-proof-status",
+    "reporting_role": "declarative status explanation"
+  }
+}

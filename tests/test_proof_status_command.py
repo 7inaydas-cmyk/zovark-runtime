@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 
 from zovark_runtime import proof_status
@@ -12,6 +13,13 @@ from zovark_runtime.proof_status import LocalCheckResult
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
+PROOF_STATUS_SOURCE = ROOT / "src" / "zovark_runtime" / "proof_status.py"
+REGISTRY_DIR = ROOT / "proof_chain" / "runtime"
+REGISTRY_FILES = {
+    "status.json",
+    "satisfied_checklist.json",
+    "deferred_checklist.json",
+}
 
 EXPECTED_PROOF_CHAIN_MARKERS = {
     "SCANNER_FIXTURE_SCHEMA_OK",
@@ -85,6 +93,59 @@ def _run_cli(args: list[str], capsys) -> dict[str, object]:
     captured = capsys.readouterr()
     assert captured.err == ""
     return json.loads(captured.out)
+
+
+def _copy_registry(target_root: Path) -> None:
+    target_dir = target_root / "proof_chain" / "runtime"
+    target_dir.mkdir(parents=True)
+    for filename in REGISTRY_FILES:
+        shutil.copyfile(REGISTRY_DIR / filename, target_dir / filename)
+    tests_dir = target_root / "tests"
+    tests_dir.mkdir()
+    shutil.copyfile(ROOT / "tests" / "test_replay_validation.py", tests_dir / "test_replay_validation.py")
+
+
+def _write_minimal_manifest(root: Path) -> None:
+    manifest_dir = root / "contracts"
+    manifest_dir.mkdir()
+    (manifest_dir / "contract-manifest.json").write_text(
+        json.dumps(
+            {
+                "source_ref": "main",
+                "source_tag": None,
+                "source_commit": ARCHITECTURE_SOURCE_COMMIT,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_proof_status_uses_checked_in_runtime_registry() -> None:
+    for filename in REGISTRY_FILES:
+        assert (REGISTRY_DIR / filename).is_file()
+
+    registry = proof_status.load_runtime_proof_registry(ROOT)
+    checklist = registry["proof_chain_checklist"]
+
+    assert {item["proof_marker"] for item in checklist if item["status"] == "satisfied"} == EXPECTED_PROOF_CHAIN_MARKERS
+    assert registry["incomplete_reason"]
+    assert registry["proof_chain_checklist_scope"]["completion_claim"] == "not-claimed"
+    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in json.dumps(registry)
+
+    raw_satisfied = json.loads((REGISTRY_DIR / "satisfied_checklist.json").read_text(encoding="utf-8"))
+    raw_count_items = [item for item in raw_satisfied["items"] if "expected_count" in item]
+    assert raw_count_items
+    assert all("value" not in item["expected_count"] for item in raw_count_items)
+
+    contract_count_item = _item_by_marker(checklist, "CONTRACT_METASCHEMA_OK")
+    assert contract_count_item["expected_count"]["value"] == len(list(CONTRACTS.glob("*.schema.json")))
+
+    fail_closed_item = _item_by_marker(checklist, "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK")
+    assert fail_closed_item["expected_count"]["value"] == len(_load_replay_validation_fail_closed_cases())
+
+    source = PROOF_STATUS_SOURCE.read_text(encoding="utf-8")
+    assert "PROOF_CHAIN_CHECKLIST = [" not in source
+    assert "SCANNER_FIXTURE_SCHEMA_OK" not in source
 
 
 def test_cli_proof_status_reports_architecture_baseline(capsys) -> None:
@@ -310,17 +371,8 @@ def test_cli_proof_status_avoids_readiness_claims(capsys) -> None:
 
 
 def test_build_proof_status_fails_when_a_local_check_fails(tmp_path: Path) -> None:
-    manifest_dir = tmp_path / "contracts"
-    manifest_dir.mkdir()
-    (manifest_dir / "contract-manifest.json").write_text(
-        json.dumps(
-            {
-                "source_tag": "v3.2.5.0-baseline-consolidated",
-                "source_commit": "a8003de839ac3bd8412a7cb520c591f52f4bd64e",
-            }
-        ),
-        encoding="utf-8",
-    )
+    _copy_registry(tmp_path)
+    _write_minimal_manifest(tmp_path)
 
     def failing_check(root: Path, name: str, script: Path) -> LocalCheckResult:
         if name == "invariant_text":
@@ -338,6 +390,8 @@ def test_build_proof_status_fails_when_a_local_check_fails(tmp_path: Path) -> No
 
 
 def test_build_proof_status_reports_missing_manifest(tmp_path: Path) -> None:
+    _copy_registry(tmp_path)
+
     def passing_check(root: Path, name: str, script: Path) -> LocalCheckResult:
         return LocalCheckResult(name=name, status="pass", detail="simulated pass")
 
@@ -351,6 +405,7 @@ def test_build_proof_status_reports_missing_manifest(tmp_path: Path) -> None:
 
 
 def test_build_proof_status_reports_malformed_manifest(tmp_path: Path) -> None:
+    _copy_registry(tmp_path)
     manifest_dir = tmp_path / "contracts"
     manifest_dir.mkdir()
     (manifest_dir / "contract-manifest.json").write_text("{not json", encoding="utf-8")
