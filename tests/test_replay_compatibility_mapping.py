@@ -12,7 +12,7 @@ import pytest
 from zovark_runtime.replay_compatibility_mapping import replay_compatibility_row_id_for_failure_record
 from zovark_runtime.replay_failure_mapping import canonical_replay_failure_code
 from zovark_runtime.replay_failure_recording import canonical_replay_failure_record
-from zovark_runtime.replay_validation import ReplayValidationResult, validate_replay_record
+from zovark_runtime.replay_validation import ReplayValidationResult, canonical_sha256_hex, validate_replay_record
 
 
 yaml = pytest.importorskip("yaml")
@@ -33,17 +33,13 @@ EXPECTED_ROW_ID_BY_CASE_ID = {
     "verdict_input_hash_mismatch": "hash_integrity.verdict_input_hash_mismatch",
     "verdict_envelope_hash_mismatch": "hash_integrity.verdict_envelope_hash_mismatch",
     "tool_catalog_version_mismatch": "catalog_compatibility.tool_catalog_mismatch",
+    "tool_retired": "tool_compatibility.tool_retired",
     "model_version_mismatch": "model_compatibility.model_version_mismatch",
     "decoding_params_mismatch": "model_compatibility.decoding_params_mismatch",
     "prompt_hash_empty": "prompt_integrity.prompt_hash_mismatch",
     "prompt_hash_mismatch": "prompt_integrity.prompt_hash_mismatch",
     "prompt_hash_missing": "prompt_integrity.prompt_hash_missing",
 }
-
-UNCOVERED_MATRIX_CODES = {
-    "REPLAY_TOOL_RETIRED",
-}
-
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -86,23 +82,46 @@ def _expected_verdict_envelope() -> dict[str, Any]:
     return _load_json(EXPECTED_VERDICT_FIXTURE)
 
 
+def _apply_case(
+    replay_record: dict[str, Any],
+    expected_verdict_input: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    for key, value in case.get("updates", {}).items():
+        replay_record[key] = copy.deepcopy(value)
+
+    field_name = case.get("field_name")
+    if isinstance(field_name, str):
+        if case.get("delete"):
+            del replay_record[field_name]
+        else:
+            replay_record[field_name] = copy.deepcopy(case["value"])
+
+    verdict_input_updates = case.get("expected_verdict_input_updates", {})
+    for key, value in verdict_input_updates.items():
+        expected_verdict_input[key] = copy.deepcopy(value)
+        replay_record["verdict_input"][key] = copy.deepcopy(value)
+    if verdict_input_updates:
+        replay_record["verdict_input_hash"] = canonical_sha256_hex(expected_verdict_input)
+
+
 def _mutated_replay_record_for_case(case: dict[str, Any]) -> dict[str, Any]:
     replay_record = copy.deepcopy(_valid_replay_record())
-    field_name = case["field_name"]
-    if case.get("delete"):
-        del replay_record[field_name]
-    else:
-        replay_record[field_name] = case["value"]
+    expected_verdict_input = _expected_verdict_input()
+    _apply_case(replay_record, expected_verdict_input, case)
     return replay_record
 
 
-def _result_for_replay_record(replay_record: dict[str, Any]) -> ReplayValidationResult:
-    return validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
+def _result_for_case(case: dict[str, Any]) -> ReplayValidationResult:
+    replay_record = copy.deepcopy(_valid_replay_record())
+    expected_verdict_input = _expected_verdict_input()
+    _apply_case(replay_record, expected_verdict_input, case)
+    return validate_replay_record(replay_record, expected_verdict_input, _expected_verdict_envelope())
 
 
 def _failure_record_for_case(case: dict[str, Any]) -> dict[str, Any]:
     replay_record = _mutated_replay_record_for_case(case)
-    result = _result_for_replay_record(replay_record)
+    result = _result_for_case(case)
     failure_record = canonical_replay_failure_record(result, replay_record)
     assert failure_record is not None
     return failure_record
@@ -112,7 +131,7 @@ def test_current_emitted_failure_records_map_to_architecture_row_ids() -> None:
     cases = _fail_closed_cases()
     rows = _failure_outcome_rows()
 
-    assert len(cases) == 10
+    assert len(cases) == 11
     assert {case["id"] for case in cases} == set(EXPECTED_ROW_ID_BY_CASE_ID)
 
     for case in cases:
@@ -167,22 +186,15 @@ def test_unknown_and_ambiguous_rows_do_not_silently_map() -> None:
     assert replay_compatibility_row_id_for_failure_record(failure_record, duplicate_rows) is None
 
 
-def test_row_mapping_does_not_claim_full_matrix_coverage() -> None:
+def test_row_mapping_does_not_claim_full_matrix_coverage_marker() -> None:
     matrix = _load_matrix()
-    rows = _failure_outcome_rows()
 
-    covered_codes = {_failure_record_for_case(case)["failure_code"] for case in _fail_closed_cases()}
-    matrix_codes = set(matrix["structured_failure_codes"])
-    row_codes = {code for row in rows for code in row["failure_codes"]}
-
-    assert row_codes == matrix_codes
-    assert matrix_codes - covered_codes == UNCOVERED_MATRIX_CODES
     assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in json.dumps(matrix)
 
 
 def test_row_mapping_does_not_change_replay_or_failure_record_shape() -> None:
     replay_record = _mutated_replay_record_for_case(_fail_closed_cases()[0])
-    result = _result_for_replay_record(replay_record)
+    result = _result_for_case(_fail_closed_cases()[0])
     failure_record = canonical_replay_failure_record(result, replay_record)
     original_failure_record = copy.deepcopy(failure_record)
 

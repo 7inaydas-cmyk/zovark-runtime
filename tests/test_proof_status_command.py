@@ -38,6 +38,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_FAILURE_RECORD_EMISSION_OK",
     "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
     "REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK",
+    "REPLAY_TOOL_RETIRED_FAIL_CLOSED_OK",
     "CONTRACT_METASCHEMA_OK",
 }
 
@@ -59,6 +60,8 @@ REPLAY_FAILURE_RECORDING_TEST = "tests/test_replay_failure_recording.py"
 REPLAY_COMPATIBILITY_MAPPING_TEST = "tests/test_replay_compatibility_mapping.py"
 DECODING_PARAMS_CANONICAL_CODE = "REPLAY_DECODING_PARAMS_MISMATCH"
 DECODING_PARAMS_ROW_ID = "model_compatibility.decoding_params_mismatch"
+TOOL_RETIRED_CANONICAL_CODE = "REPLAY_TOOL_RETIRED"
+TOOL_RETIRED_ROW_ID = "tool_compatibility.tool_retired"
 REPLAY_COMPATIBILITY_SOURCE_HASHES = {
     REPLAY_COMPATIBILITY_YAML: "4cd82e07ea8cdd8e28f5a22fd6c38fb38c966ef9b2e672baaec954e1bdd6350a",
     REPLAY_COMPATIBILITY_SCHEMA: "6705c94a99f33528e7737e776f3de4ea7a830e00ad94a8ff0464281631525a7a",
@@ -356,11 +359,29 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert decoding_params_item["canonical_code"] == DECODING_PARAMS_CANONICAL_CODE
     assert decoding_params_item["row_id"] == DECODING_PARAMS_ROW_ID
 
+    tool_retired_item = _item_by_marker(checklist, "REPLAY_TOOL_RETIRED_FAIL_CLOSED_OK")
+    assert tool_retired_item["test_file_path"] == REPLAY_VALIDATION_TEST
+    assert tool_retired_item["related_test_file_paths"] == [
+        REPLAY_FAILURE_MAPPING_TEST,
+        REPLAY_FAILURE_RECORDING_TEST,
+        REPLAY_COMPATIBILITY_MAPPING_TEST,
+    ]
+    assert tool_retired_item["runtime_artifact_paths"] == [
+        "src/zovark_runtime/replay_validation.py",
+        REPLAY_FAILURE_MAPPING_MODULE,
+        REPLAY_FAILURE_RECORDING_MODULE,
+        REPLAY_COMPATIBILITY_MAPPING_MODULE,
+    ]
+    assert tool_retired_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    assert tool_retired_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    assert tool_retired_item["canonical_code"] == TOOL_RETIRED_CANONICAL_CODE
+    assert tool_retired_item["row_id"] == TOOL_RETIRED_ROW_ID
+
     coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_claim")
     assert coverage_item["status"] == "deferred"
     assert "coverage" in coverage_item["deferred_reason"]
     assert "matrix-row mapping is proven" in coverage_item["deferred_reason"]
-    assert "REPLAY_TOOL_RETIRED" in coverage_item["deferred_reason"]
+    assert "tool-retired failure records" in coverage_item["deferred_reason"]
     assert "REPLAY_DECODING_PARAMS_MISMATCH" not in coverage_item["deferred_reason"]
     assert "ADR-0047" in coverage_item["architecture_authority"]
     assert "INV-036" in coverage_item["architecture_authority"]
@@ -368,7 +389,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57" in coverage_item["architecture_authority"]
     assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/59" in coverage_item["architecture_authority"]
-    assert "REPLAY_TOOL_RETIRED" in coverage_item["authority_required"]
+    assert "coverage equality gate" in coverage_item["authority_required"]
 
     assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)
 

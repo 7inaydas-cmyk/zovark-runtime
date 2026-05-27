@@ -11,6 +11,7 @@ import pytest
 
 from zovark_runtime.replay_failure_mapping import (
     REPLAY_DECODING_PARAMS_MISMATCH,
+    REPLAY_TOOL_RETIRED,
     canonical_replay_failure_code,
 )
 from zovark_runtime.replay_failure_recording import canonical_replay_failure_record
@@ -19,6 +20,7 @@ from zovark_runtime.replay_validation import (
     SCHEMA_INCOMPATIBLE,
     VERDICT_INPUT_MISMATCH,
     ReplayValidationResult,
+    canonical_sha256_hex,
     validate_replay_record,
 )
 from zovark_runtime.verdict_derivation import canonical_json_bytes
@@ -87,6 +89,29 @@ def _expected_verdict_envelope() -> dict[str, Any]:
     return _load_json(EXPECTED_VERDICT_FIXTURE)
 
 
+def _apply_case(
+    replay_record: dict[str, Any],
+    expected_verdict_input: dict[str, Any],
+    case: dict[str, Any],
+) -> None:
+    for key, value in case.get("updates", {}).items():
+        replay_record[key] = copy.deepcopy(value)
+
+    field_name = case.get("field_name")
+    if isinstance(field_name, str):
+        if case.get("delete"):
+            del replay_record[field_name]
+        else:
+            replay_record[field_name] = copy.deepcopy(case["value"])
+
+    verdict_input_updates = case.get("expected_verdict_input_updates", {})
+    for key, value in verdict_input_updates.items():
+        expected_verdict_input[key] = copy.deepcopy(value)
+        replay_record["verdict_input"][key] = copy.deepcopy(value)
+    if verdict_input_updates:
+        replay_record["verdict_input_hash"] = canonical_sha256_hex(expected_verdict_input)
+
+
 def _contract_store() -> dict[str, dict[str, Any]]:
     schemas: dict[str, dict[str, Any]] = {}
     for schema_path in sorted(CONTRACTS.glob("*.schema.json")):
@@ -132,16 +157,16 @@ def _replay_compatibility_codes() -> tuple[str, ...]:
 
 def _mutated_replay_record_for_case(case: dict[str, Any]) -> dict[str, Any]:
     replay_record = copy.deepcopy(_valid_replay_record())
-    field_name = case["field_name"]
-    if case.get("delete"):
-        del replay_record[field_name]
-    else:
-        replay_record[field_name] = case["value"]
+    expected_verdict_input = _expected_verdict_input()
+    _apply_case(replay_record, expected_verdict_input, case)
     return replay_record
 
 
-def _result_for_replay_record(replay_record: dict[str, Any]) -> ReplayValidationResult:
-    return validate_replay_record(replay_record, _expected_verdict_input(), _expected_verdict_envelope())
+def _result_for_case(case: dict[str, Any]) -> ReplayValidationResult:
+    replay_record = copy.deepcopy(_valid_replay_record())
+    expected_verdict_input = _expected_verdict_input()
+    _apply_case(replay_record, expected_verdict_input, case)
+    return validate_replay_record(replay_record, expected_verdict_input, _expected_verdict_envelope())
 
 
 def test_current_fail_closed_cases_emit_canonical_failure_records() -> None:
@@ -150,11 +175,11 @@ def test_current_fail_closed_cases_emit_canonical_failure_records() -> None:
     canonical_enum = _failure_code_enum()
     compatibility_codes = _replay_compatibility_codes()
 
-    assert len(cases) == 10
+    assert len(cases) == 11
 
     for case in cases:
         replay_record = _mutated_replay_record_for_case(case)
-        result = _result_for_replay_record(replay_record)
+        result = _result_for_case(case)
         expected_canonical_code = canonical_replay_failure_code(result)
 
         failure_record = canonical_replay_failure_record(result, replay_record)
@@ -177,8 +202,8 @@ def test_emitted_failure_records_are_deterministic() -> None:
     for case in _fail_closed_cases():
         first_replay_record = _mutated_replay_record_for_case(case)
         second_replay_record = _mutated_replay_record_for_case(case)
-        first_result = _result_for_replay_record(first_replay_record)
-        second_result = _result_for_replay_record(second_replay_record)
+        first_result = _result_for_case(case)
+        second_result = _result_for_case(case)
 
         first_failure_record = canonical_replay_failure_record(first_result, first_replay_record)
         second_failure_record = canonical_replay_failure_record(second_result, second_replay_record)
@@ -192,7 +217,7 @@ def test_emitted_failure_records_are_deterministic() -> None:
 def test_decoding_params_failure_record_uses_bounded_metadata() -> None:
     case = next(case for case in _fail_closed_cases() if case["id"] == "decoding_params_mismatch")
     replay_record = _mutated_replay_record_for_case(case)
-    result = _result_for_replay_record(replay_record)
+    result = _result_for_case(case)
 
     failure_record = canonical_replay_failure_record(result, replay_record)
 
@@ -204,6 +229,24 @@ def test_decoding_params_failure_record_uses_bounded_metadata() -> None:
     assert "decoding_params" not in failure_record
     assert "expected_decoding_params" not in failure_record
     assert "observed_decoding_params" not in failure_record
+    assert not (FORBIDDEN_RAW_FIELDS & set(failure_record))
+
+
+def test_tool_retired_failure_record_uses_bounded_metadata() -> None:
+    case = next(case for case in _fail_closed_cases() if case["id"] == "tool_retired")
+    replay_record = _mutated_replay_record_for_case(case)
+    result = _result_for_case(case)
+
+    failure_record = canonical_replay_failure_record(result, replay_record)
+
+    assert failure_record is not None
+    assert failure_record["failure_code"] == REPLAY_TOOL_RETIRED
+    assert failure_record["failure_category"] == "tool_compatibility"
+    assert failure_record["component"] == "tool_catalog_entry"
+    assert failure_record["field_path"] == "tool_io"
+    assert "tool_name" not in failure_record
+    assert "tool_version" not in failure_record
+    assert "raw_tool_output" not in failure_record
     assert not (FORBIDDEN_RAW_FIELDS & set(failure_record))
 
 
@@ -221,7 +264,7 @@ def test_unsupported_local_branches_do_not_emit_failure_records(result: ReplayVa
 
 def test_failure_record_emission_does_not_change_replay_validation_result_shape() -> None:
     replay_record = _mutated_replay_record_for_case(_fail_closed_cases()[0])
-    result = _result_for_replay_record(replay_record)
+    result = _result_for_case(_fail_closed_cases()[0])
 
     failure_record = canonical_replay_failure_record(result, replay_record)
 
