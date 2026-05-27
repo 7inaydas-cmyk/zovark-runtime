@@ -19,6 +19,7 @@ REGISTRY_FILES = {
     "status.json",
     "satisfied_checklist.json",
     "deferred_checklist.json",
+    "replay_compatibility_coverage.json",
 }
 
 EXPECTED_PROOF_CHAIN_MARKERS = {
@@ -37,6 +38,7 @@ EXPECTED_PROOF_CHAIN_MARKERS = {
     "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
     "REPLAY_FAILURE_RECORD_EMISSION_OK",
     "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
+    "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK",
     "REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK",
     "REPLAY_TOOL_RETIRED_FAIL_CLOSED_OK",
     "CONTRACT_METASCHEMA_OK",
@@ -58,6 +60,8 @@ REPLAY_VALIDATION_TEST = "tests/test_replay_validation.py"
 REPLAY_FAILURE_MAPPING_TEST = "tests/test_replay_failure_mapping.py"
 REPLAY_FAILURE_RECORDING_TEST = "tests/test_replay_failure_recording.py"
 REPLAY_COMPATIBILITY_MAPPING_TEST = "tests/test_replay_compatibility_mapping.py"
+REPLAY_COMPATIBILITY_COVERAGE_TEST = "tests/test_replay_compatibility_coverage.py"
+REPLAY_COMPATIBILITY_COVERAGE_REGISTRY = "proof_chain/runtime/replay_compatibility_coverage.json"
 DECODING_PARAMS_CANONICAL_CODE = "REPLAY_DECODING_PARAMS_MISMATCH"
 DECODING_PARAMS_ROW_ID = "model_compatibility.decoding_params_mismatch"
 TOOL_RETIRED_CANONICAL_CODE = "REPLAY_TOOL_RETIRED"
@@ -142,7 +146,7 @@ def test_proof_status_uses_checked_in_runtime_registry() -> None:
     assert {item["proof_marker"] for item in checklist if item["status"] == "satisfied"} == EXPECTED_PROOF_CHAIN_MARKERS
     assert registry["incomplete_reason"]
     assert registry["proof_chain_checklist_scope"]["completion_claim"] == "not-claimed"
-    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in json.dumps(registry)
+    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" in json.dumps(registry)
 
     raw_satisfied = json.loads((REGISTRY_DIR / "satisfied_checklist.json").read_text(encoding="utf-8"))
     raw_count_items = [item for item in raw_satisfied["items"] if "expected_count" in item]
@@ -231,6 +235,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
                 "schema_artifact_path",
                 "catalog_artifact_paths",
                 "related_test_file_paths",
+                "coverage_evidence_path",
                 "expected_count",
             }
             assert any(item.get(key) for key in evidence_keys)
@@ -251,6 +256,8 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
                 _assert_repo_file_exists(rel_path)
             for rel_path in item.get("fixture_paths", []):
                 _assert_repo_file_exists(rel_path)
+            if "coverage_evidence_path" in item:
+                _assert_repo_file_exists(item["coverage_evidence_path"])
 
         if item["status"] == "deferred":
             assert item.get("deferred_reason")
@@ -259,7 +266,7 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
 
     satisfied_markers = {item["proof_marker"] for item in checklist if item["status"] == "satisfied"}
     assert satisfied_markers == EXPECTED_PROOF_CHAIN_MARKERS
-    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" not in json.dumps(payload)
+    assert "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK" in json.dumps(payload)
 
     contract_count_item = _item_by_marker(checklist, "CONTRACT_METASCHEMA_OK")
     assert contract_count_item["expected_count"]["value"] == len(list(CONTRACTS.glob("*.schema.json")))
@@ -377,19 +384,24 @@ def test_cli_proof_status_explains_incomplete_proof_chain(capsys) -> None:
     assert tool_retired_item["canonical_code"] == TOOL_RETIRED_CANONICAL_CODE
     assert tool_retired_item["row_id"] == TOOL_RETIRED_ROW_ID
 
-    coverage_item = next(item for item in checklist if item["id"] == "runtime_replay_compatibility_coverage_claim")
-    assert coverage_item["status"] == "deferred"
-    assert "coverage" in coverage_item["deferred_reason"]
-    assert "matrix-row mapping is proven" in coverage_item["deferred_reason"]
-    assert "tool-retired failure records" in coverage_item["deferred_reason"]
-    assert "REPLAY_DECODING_PARAMS_MISMATCH" not in coverage_item["deferred_reason"]
-    assert "ADR-0047" in coverage_item["architecture_authority"]
-    assert "INV-036" in coverage_item["architecture_authority"]
-    assert "architecture/blueprint/schemas/replay_failure_record.schema.json" in coverage_item["architecture_authority"]
-    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55" in coverage_item["architecture_authority"]
-    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57" in coverage_item["architecture_authority"]
-    assert "https://github.com/7inaydas-cmyk/zovark-architecture/issues/59" in coverage_item["architecture_authority"]
-    assert "coverage equality gate" in coverage_item["authority_required"]
+    coverage_item = _item_by_marker(checklist, "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK")
+    assert coverage_item["test_file_path"] == REPLAY_COMPATIBILITY_COVERAGE_TEST
+    assert coverage_item["yaml_artifact_path"] == REPLAY_COMPATIBILITY_YAML
+    assert coverage_item["coverage_evidence_path"] == REPLAY_COMPATIBILITY_COVERAGE_REGISTRY
+    assert coverage_item["contract_paths"] == [REPLAY_FAILURE_RECORD_SCHEMA]
+    assert coverage_item["related_test_file_paths"] == [
+        REPLAY_VALIDATION_TEST,
+        REPLAY_FAILURE_MAPPING_TEST,
+        REPLAY_FAILURE_RECORDING_TEST,
+        REPLAY_COMPATIBILITY_MAPPING_TEST,
+    ]
+    assert coverage_item["runtime_artifact_paths"] == [
+        "src/zovark_runtime/replay_validation.py",
+        REPLAY_FAILURE_MAPPING_MODULE,
+        REPLAY_FAILURE_RECORDING_MODULE,
+        REPLAY_COMPATIBILITY_MAPPING_MODULE,
+    ]
+    assert not any(item["id"] == "runtime_replay_compatibility_coverage_claim" for item in checklist)
 
     assert not any(item["id"] == "runtime_replay_failure_record_emission" for item in checklist)
 

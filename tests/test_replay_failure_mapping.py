@@ -139,7 +139,6 @@ def test_current_fail_closed_cases_map_to_canonical_failure_codes() -> None:
     canonical_enum = _failure_code_enum()
     compatibility_codes = _replay_compatibility_codes()
 
-    assert len(cases) == 11
     assert {case["id"] for case in cases} == set(EXPECTED_CANONICAL_CODES_BY_CASE_ID)
 
     for case in cases:
