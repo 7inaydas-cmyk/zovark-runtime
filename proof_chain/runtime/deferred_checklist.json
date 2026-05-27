@@ -2,23 +2,6 @@
   "items": [
     {
       "architecture_authority": [
-        "ADR-0047",
-        "INV-036",
-        "architecture/replay-compatibility.yaml",
-        "architecture/blueprint/schemas/replay_failure_record.schema.json",
-        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
-        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
-        "https://github.com/7inaydas-cmyk/zovark-architecture/issues/59"
-      ],
-      "authority_required": "a coverage equality gate must explicitly prove matrix row and structured failure-code coverage equality before runtime claims replay compatibility coverage",
-      "completion_note": "runtime is not claiming proof-loop completion",
-      "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch and tool-retired failure records, but full replay compatibility coverage remains deferred until a separate coverage equality gate proves and authorizes the coverage marker",
-      "id": "runtime_replay_compatibility_coverage_claim",
-      "milestone_or_queue_position": "after explicit replay compatibility coverage equality gate",
-      "status": "deferred"
-    },
-    {
-      "architecture_authority": [
         "ADR-0046",
         "INV-035",
         "INV-039"

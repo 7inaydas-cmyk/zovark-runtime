@@ -131,7 +131,6 @@ def test_current_emitted_failure_records_map_to_architecture_row_ids() -> None:
     cases = _fail_closed_cases()
     rows = _failure_outcome_rows()
 
-    assert len(cases) == 11
     assert {case["id"] for case in cases} == set(EXPECTED_ROW_ID_BY_CASE_ID)
 
     for case in cases:

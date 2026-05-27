@@ -1,0 +1,104 @@
+{
+  "common_evidence": {
+    "canonical_code_mapping": {
+      "marker": "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
+      "path": "tests/test_replay_failure_mapping.py"
+    },
+    "fail_closed": {
+      "marker": "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
+      "path": "tests/test_replay_validation.py"
+    },
+    "failure_record_emission": {
+      "marker": "REPLAY_FAILURE_RECORD_EMISSION_OK",
+      "path": "tests/test_replay_failure_recording.py"
+    },
+    "row_mapping": {
+      "marker": "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
+      "path": "tests/test_replay_compatibility_mapping.py"
+    }
+  },
+  "coverage_kind": "replay_compatibility_matrix_row_equality",
+  "covered_rows_source": "proof_chain/runtime/replay_compatibility_coverage.json::rows",
+  "declared_rows_source": "contracts/replay-compatibility.yaml::failure_outcome_rows",
+  "proof_marker": "REPLAY_COMPATIBILITY_MATRIX_COVERAGE_OK",
+  "rows": [
+    {
+      "fail_closed_case_ids": [
+        "schema_version_incompatible"
+      ],
+      "failure_code": "REPLAY_SCHEMA_INCOMPATIBLE",
+      "row_id": "schema_compatibility.record_schema_incompatible"
+    },
+    {
+      "fail_closed_case_ids": [
+        "record_format_version_incompatible"
+      ],
+      "failure_code": "REPLAY_RECORD_FORMAT_INCOMPATIBLE",
+      "row_id": "schema_compatibility.record_format_incompatible"
+    },
+    {
+      "fail_closed_case_ids": [
+        "tool_retired"
+      ],
+      "failure_code": "REPLAY_TOOL_RETIRED",
+      "row_id": "tool_compatibility.tool_retired",
+      "supplemental_markers": [
+        "REPLAY_TOOL_RETIRED_FAIL_CLOSED_OK"
+      ]
+    },
+    {
+      "fail_closed_case_ids": [
+        "tool_catalog_version_mismatch"
+      ],
+      "failure_code": "REPLAY_TOOL_CATALOG_MISMATCH",
+      "row_id": "catalog_compatibility.tool_catalog_mismatch"
+    },
+    {
+      "fail_closed_case_ids": [
+        "verdict_input_hash_mismatch"
+      ],
+      "failure_code": "REPLAY_VERDICT_INPUT_HASH_MISMATCH",
+      "row_id": "hash_integrity.verdict_input_hash_mismatch"
+    },
+    {
+      "fail_closed_case_ids": [
+        "verdict_envelope_hash_mismatch"
+      ],
+      "failure_code": "REPLAY_VERDICT_ENVELOPE_HASH_MISMATCH",
+      "row_id": "hash_integrity.verdict_envelope_hash_mismatch"
+    },
+    {
+      "fail_closed_case_ids": [
+        "model_version_mismatch"
+      ],
+      "failure_code": "REPLAY_MODEL_VERSION_MISMATCH",
+      "row_id": "model_compatibility.model_version_mismatch"
+    },
+    {
+      "fail_closed_case_ids": [
+        "decoding_params_mismatch"
+      ],
+      "failure_code": "REPLAY_DECODING_PARAMS_MISMATCH",
+      "row_id": "model_compatibility.decoding_params_mismatch",
+      "supplemental_markers": [
+        "REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK"
+      ]
+    },
+    {
+      "fail_closed_case_ids": [
+        "prompt_hash_missing"
+      ],
+      "failure_code": "REPLAY_PROMPT_HASH_MISSING",
+      "row_id": "prompt_integrity.prompt_hash_missing"
+    },
+    {
+      "fail_closed_case_ids": [
+        "prompt_hash_empty",
+        "prompt_hash_mismatch"
+      ],
+      "failure_code": "REPLAY_PROMPT_HASH_MISMATCH",
+      "row_id": "prompt_integrity.prompt_hash_mismatch"
+    }
+  ],
+  "schema_version": "1.0.0"
+}
