@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import importlib.util
 import io
@@ -12,310 +13,15 @@ from pathlib import Path
 from types import ModuleType
 
 
-BASELINE_INVENTORY = {
-    "adr_files": 26,
-    "binding_adrs": 25,
-    "proposed_pending_adrs": ["ADR-0043"],
-    "invariants": 39,
-    "authoritative_schemas": 26,
-    "replay_compatibility_contract": "architecture/replay-compatibility.yaml",
-}
-
-DEFERRED_CAPABILITIES = [
-    "bounded retrieval implementation",
-    "deterministic verdict/proof generation",
-    "AlertForge scenario validation",
-    "benchmark report script",
-    "autonomous-dispatch capability",
-    "customer/production rollout",
-]
+RUNTIME_PROOF_REGISTRY_DIR = Path("proof_chain/runtime")
+STATUS_REGISTRY_FILE = RUNTIME_PROOF_REGISTRY_DIR / "status.json"
+SATISFIED_CHECKLIST_REGISTRY_FILE = RUNTIME_PROOF_REGISTRY_DIR / "satisfied_checklist.json"
+DEFERRED_CHECKLIST_REGISTRY_FILE = RUNTIME_PROOF_REGISTRY_DIR / "deferred_checklist.json"
 
 PROOF_CHECK_SCRIPTS = [
     ("contract_manifest", Path("scripts/check_contract_manifest.py")),
     ("invariant_text", Path("scripts/check_invariants.py")),
     ("no_unbounded_model_context", Path("scripts/check_no_unbounded_model_context.py")),
-]
-
-
-INCOMPLETE_REASON = [
-    "deferred proof-chain items remain",
-    "runtime completion criteria are architecture-owned or not yet explicitly defined",
-    "readiness/product/production claims are not made",
-]
-
-PROOF_CHAIN_CHECKLIST_SCOPE = {
-    "reporting_role": "declarative status explanation",
-    "completion_definition": "not-defined-by-runtime",
-    "completion_authority": "architecture-owned or undefined until explicitly specified",
-    "completion_claim": "not-claimed",
-    "proof_execution": "not-run-by-proof-status",
-}
-
-PROOF_CHAIN_CHECKLIST = [
-    {
-        "id": "scanner_fixture_schema_proof",
-        "status": "satisfied",
-        "proof_marker": "SCANNER_FIXTURE_SCHEMA_OK",
-        "test_file_path": "tests/test_scanner_finding_fixture.py",
-        "contract_paths": ["contracts/scanner_finding_envelope.schema.json"],
-        "fixture_paths": ["tests/fixtures/scanner_finding_minimal.json"],
-    },
-    {
-        "id": "verdict_envelope_fixture_schema_proof",
-        "status": "satisfied",
-        "proof_marker": "VERDICT_FIXTURE_SCHEMA_OK",
-        "test_file_path": "tests/test_verdict_envelope_fixture.py",
-        "contract_paths": [
-            "contracts/verdict_envelope.schema.json",
-            "contracts/recommended_action.schema.json",
-            "contracts/finding.schema.json",
-        ],
-        "fixture_paths": ["tests/fixtures/verdict_envelope_minimal.json"],
-    },
-    {
-        "id": "verdict_input_fixture_schema_proof",
-        "status": "satisfied",
-        "proof_marker": "VERDICT_INPUT_FIXTURE_SCHEMA_OK",
-        "test_file_path": "tests/test_verdict_input_fixture.py",
-        "contract_paths": [
-            "contracts/verdict_input.schema.json",
-            "contracts/scanner_finding_envelope.schema.json",
-        ],
-        "fixture_paths": ["tests/fixtures/verdict_input_minimal.json"],
-    },
-    {
-        "id": "replay_record_fixture_schema_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_RECORD_FIXTURE_SCHEMA_OK",
-        "test_file_path": "tests/test_replay_record_fixture.py",
-        "contract_paths": [
-            "contracts/replay_record.schema.json",
-            "contracts/verdict_input.schema.json",
-        ],
-        "fixture_paths": ["tests/fixtures/replay_record_minimal.json"],
-    },
-    {
-        "id": "deterministic_verdict_derivation_proof",
-        "status": "satisfied",
-        "proof_marker": "DETERMINISTIC_VERDICT_DERIVATION_OK",
-        "test_file_path": "tests/test_deterministic_verdict_derivation.py",
-        "runtime_artifact_paths": ["src/zovark_runtime/verdict_derivation.py"],
-        "contract_paths": [
-            "contracts/verdict_input.schema.json",
-            "contracts/verdict_envelope.schema.json",
-        ],
-        "fixture_paths": [
-            "tests/fixtures/verdict_input_minimal.json",
-            "tests/fixtures/verdict_envelope_expected_from_minimal_input.json",
-        ],
-    },
-    {
-        "id": "minimal_replay_validation_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_VALIDATION_PROOF_OK",
-        "test_file_path": "tests/test_replay_validation.py",
-        "runtime_artifact_paths": ["src/zovark_runtime/replay_validation.py"],
-        "contract_paths": [
-            "contracts/replay_record.schema.json",
-            "contracts/verdict_input.schema.json",
-            "contracts/verdict_envelope.schema.json",
-        ],
-        "fixture_paths": [
-            "tests/fixtures/replay_record_expected_minimal.json",
-            "tests/fixtures/verdict_input_minimal.json",
-            "tests/fixtures/verdict_envelope_expected_from_minimal_input.json",
-        ],
-    },
-    {
-        "id": "replay_validation_fail_closed_cases",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_VALIDATION_FAIL_CLOSED_CASES_OK",
-        "test_file_path": "tests/test_replay_validation.py",
-        "runtime_artifact_paths": ["src/zovark_runtime/replay_validation.py"],
-        "expected_count": {
-            "name": "replay_validation_fail_closed_cases",
-            "value": 10,
-            "source": "tests/test_replay_validation.py::REPLAY_VALIDATION_FAIL_CLOSED_CASES",
-        },
-    },
-    {
-        "id": "replay_compatibility_matrix_schema_validation",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_COMPATIBILITY_MATRIX_SCHEMA_OK",
-        "test_file_path": "tests/test_replay_compatibility_contract.py",
-        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
-        "schema_artifact_path": "contracts/replay-compatibility.schema.json",
-        "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
-        "source_hashes": {
-            "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
-            "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
-        },
-    },
-    {
-        "id": "replay_compatibility_row_coverage_schema_validation",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK",
-        "test_file_path": "tests/test_replay_compatibility_contract.py",
-        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
-        "schema_artifact_path": "contracts/replay-compatibility.schema.json",
-        "architecture_source_commit": "5411106481dd843f754dc6a86f7371e1468610fc",
-        "source_hashes": {
-            "contracts/replay-compatibility.yaml": "3df5232c17fd110629b9f93ec20d283bc10a9735e88c6a45b3b571caadb3deee",
-            "contracts/replay-compatibility.schema.json": "1b287c117c2f0253f2fac6db8c15332b2e1faa45b289e249aab6d57850f3b172",
-        },
-    },
-    {
-        "id": "replay_failure_record_schema_validation",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_FAILURE_RECORD_SCHEMA_OK",
-        "test_file_path": "tests/test_replay_failure_record_contract.py",
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-        "architecture_source_commit": "34c42ebb24b69098159ddccbbcae981d0abe74af",
-        "source_hashes": {
-            "contracts/replay_failure_record.schema.json": "55e867373d5094f4aae91acd8fc524f6178664fcf64f1a4fa30b9e90b248b2f1",
-        },
-    },
-    {
-        "id": "replay_failure_record_fixture_schema_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_FAILURE_RECORD_FIXTURE_SCHEMA_OK",
-        "test_file_path": "tests/test_replay_failure_record_fixture.py",
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-        "fixture_paths": ["tests/fixtures/replay_failure_record_minimal.json"],
-    },
-    {
-        "id": "replay_failure_canonical_code_mapping_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_FAILURE_CANONICAL_CODE_MAPPING_OK",
-        "test_file_path": "tests/test_replay_failure_mapping.py",
-        "runtime_artifact_paths": ["src/zovark_runtime/replay_failure_mapping.py"],
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
-    },
-    {
-        "id": "replay_failure_record_emission_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_FAILURE_RECORD_EMISSION_OK",
-        "test_file_path": "tests/test_replay_failure_recording.py",
-        "runtime_artifact_paths": [
-            "src/zovark_runtime/replay_failure_recording.py",
-            "src/zovark_runtime/replay_failure_mapping.py",
-        ],
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-    },
-    {
-        "id": "replay_compatibility_matrix_row_mapping_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_COMPATIBILITY_MATRIX_ROW_MAPPING_OK",
-        "test_file_path": "tests/test_replay_compatibility_mapping.py",
-        "runtime_artifact_paths": [
-            "src/zovark_runtime/replay_compatibility_mapping.py",
-            "src/zovark_runtime/replay_failure_recording.py",
-        ],
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
-    },
-    {
-        "id": "replay_decoding_params_fail_closed_proof",
-        "status": "satisfied",
-        "proof_marker": "REPLAY_DECODING_PARAMS_FAIL_CLOSED_OK",
-        "test_file_path": "tests/test_replay_validation.py",
-        "related_test_file_paths": [
-            "tests/test_replay_failure_mapping.py",
-            "tests/test_replay_failure_recording.py",
-            "tests/test_replay_compatibility_mapping.py",
-        ],
-        "runtime_artifact_paths": [
-            "src/zovark_runtime/replay_failure_mapping.py",
-            "src/zovark_runtime/replay_failure_recording.py",
-            "src/zovark_runtime/replay_compatibility_mapping.py",
-        ],
-        "contract_paths": ["contracts/replay_failure_record.schema.json"],
-        "yaml_artifact_path": "contracts/replay-compatibility.yaml",
-        "canonical_code": "REPLAY_DECODING_PARAMS_MISMATCH",
-        "row_id": "model_compatibility.decoding_params_mismatch",
-    },
-    {
-        "id": "contract_metaschema_validation",
-        "status": "satisfied",
-        "proof_marker": "CONTRACT_METASCHEMA_OK",
-        "test_file_path": "tests/test_contract_schema_meta_validation.py",
-        "expected_count": {
-            "name": "contract_schema_files",
-            "value": 11,
-            "source": "contracts/*.schema.json",
-        },
-    },
-    {
-        "id": "runtime_replay_compatibility_coverage_claim",
-        "status": "deferred",
-        "deferred_reason": "runtime matrix-row mapping is proven for current emitted failure records, including decoding-params mismatch, but full replay compatibility coverage remains deferred because REPLAY_TOOL_RETIRED is not represented by current runtime validation",
-        "milestone_or_queue_position": "after REPLAY_TOOL_RETIRED authority and runtime behavior are scoped and proven",
-        "architecture_authority": [
-            "ADR-0047",
-            "INV-036",
-            "architecture/replay-compatibility.yaml",
-            "architecture/blueprint/schemas/replay_failure_record.schema.json",
-            "https://github.com/7inaydas-cmyk/zovark-architecture/issues/55",
-            "https://github.com/7inaydas-cmyk/zovark-architecture/issues/57",
-        ],
-        "authority_required": "full coverage proof must cover REPLAY_TOOL_RETIRED or an architecture-authorized exclusion before runtime claims replay compatibility coverage",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "audit_chain_output",
-        "status": "deferred",
-        "deferred_reason": "runtime does not emit audit-chain output from investigation state",
-        "milestone_or_queue_position": "M5 / after runtime investigation state exists",
-        "architecture_authority": ["ADR-0046", "INV-035", "INV-039"],
-        "authority_required": "audit-chain runtime scope and storage semantics must be implemented separately",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "runtime_investigation_execution",
-        "status": "deferred",
-        "deferred_reason": "runtime investigation execution is not implemented",
-        "milestone_or_queue_position": "after proof-chain contract and fixture proofs; before end-to-end validation",
-        "architecture_authority": ["PHASE_PLAN.md"],
-        "authority_required": "runtime investigation scope must be explicitly authorized before proof-status can treat it as proof-chain evidence",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "alertforge_scenario_validation",
-        "status": "deferred",
-        "deferred_reason": "AlertForge scenario validation is not imported or executed by runtime",
-        "milestone_or_queue_position": "after runtime investigation execution boundary is defined",
-        "architecture_authority": ["PHASE_PLAN.md"],
-        "authority_required": "AlertForge contract and scenario execution scope must land separately",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "benchmark_proof",
-        "status": "deferred",
-        "deferred_reason": "benchmark proof is not meaningful before end-to-end validation exists",
-        "milestone_or_queue_position": "PHASE_PLAN.md Phase 6",
-        "architecture_authority": ["ADR-0046", "ADR-0052", "INV-022"],
-        "authority_required": "benchmark harness and measured artifacts must land separately",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "dashboard_and_external_claims",
-        "status": "deferred",
-        "deferred_reason": "external claim surfaces are outside the current runtime proof chain",
-        "milestone_or_queue_position": "after benchmark-backed evidence and explicit product scope",
-        "architecture_authority": ["ADR-0052", "INV-022", "PHASE_PLAN.md"],
-        "authority_required": "external claim surfaces require separate architecture/product authorization and evidence",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
-    {
-        "id": "production_sla_compliance_workflows",
-        "status": "deferred",
-        "deferred_reason": "operational workflows and commitments are outside this runtime proof repository state",
-        "milestone_or_queue_position": "not in current proof-chain queue",
-        "architecture_authority": ["ADR-0050", "INV-022"],
-        "authority_required": "operational commitment scope requires separate architecture and evidence",
-        "completion_note": "runtime is not claiming proof-loop completion",
-    },
 ]
 
 
@@ -339,6 +45,78 @@ def repo_root() -> Path:
     """Return the repository root for local source-tree execution."""
 
     return Path(__file__).resolve().parents[2]
+
+
+def _load_registry_json(root: Path, rel_path: Path) -> object:
+    return json.loads((root / rel_path).read_text(encoding="utf-8"))
+
+
+def _load_registry_items(root: Path, rel_path: Path) -> list[dict[str, object]]:
+    registry = _load_registry_json(root, rel_path)
+    if not isinstance(registry, dict):
+        raise RuntimeError(f"{rel_path}: registry must be an object")
+    items = registry.get("items")
+    if not isinstance(items, list) or not all(isinstance(item, dict) for item in items):
+        raise RuntimeError(f"{rel_path}: items must be a list of objects")
+    return items
+
+
+def _assigned_tuple_length(path: Path, assignment_name: str) -> int:
+    module = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in module.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == assignment_name for target in node.targets):
+            continue
+        if not isinstance(node.value, ast.Tuple):
+            raise RuntimeError(f"{path}: {assignment_name} must be a tuple")
+        return len(node.value.elts)
+    raise RuntimeError(f"{path}: missing {assignment_name}")
+
+
+def _derived_count(root: Path, source: str) -> int:
+    if source == "contracts/*.schema.json":
+        return len(list((root / "contracts").glob("*.schema.json")))
+    if source == "tests/test_replay_validation.py::REPLAY_VALIDATION_FAIL_CLOSED_CASES":
+        return _assigned_tuple_length(
+            root / "tests" / "test_replay_validation.py",
+            "REPLAY_VALIDATION_FAIL_CLOSED_CASES",
+        )
+    raise RuntimeError(f"unsupported expected_count source: {source}")
+
+
+def _hydrate_expected_counts(root: Path, checklist: list[dict[str, object]]) -> None:
+    for item in checklist:
+        expected_count = item.get("expected_count")
+        if not isinstance(expected_count, dict):
+            continue
+        source = expected_count.get("source")
+        if not isinstance(source, str):
+            raise RuntimeError(f"{item.get('id', '<unknown>')}: expected_count.source must be set")
+        expected_count["value"] = _derived_count(root, source)
+
+
+def load_runtime_proof_registry(root: Path | None = None) -> dict[str, object]:
+    """Load declarative runtime proof-chain registry files."""
+
+    actual_root = root or repo_root()
+    status = _load_registry_json(actual_root, STATUS_REGISTRY_FILE)
+    if not isinstance(status, dict):
+        raise RuntimeError(f"{STATUS_REGISTRY_FILE}: registry must be an object")
+
+    checklist = [
+        *_load_registry_items(actual_root, SATISFIED_CHECKLIST_REGISTRY_FILE),
+        *_load_registry_items(actual_root, DEFERRED_CHECKLIST_REGISTRY_FILE),
+    ]
+    _hydrate_expected_counts(actual_root, checklist)
+
+    return {
+        "baseline_inventory": status["baseline_inventory"],
+        "deferred_capabilities": status["deferred_capabilities"],
+        "incomplete_reason": status["incomplete_reason"],
+        "proof_chain_checklist_scope": status["proof_chain_checklist_scope"],
+        "proof_chain_checklist": checklist,
+    }
 
 
 def _load_module(path: Path) -> ModuleType:
@@ -446,18 +224,19 @@ def build_proof_status(
     checks = [check_runner(actual_root, name, script) for name, script in PROOF_CHECK_SCRIPTS]
     failed = [check for check in checks if check.status != "pass"]
     architecture_baseline, baseline_loaded = read_architecture_baseline(actual_root)
+    registry = load_runtime_proof_registry(actual_root)
 
     payload: dict[str, object] = {
         "report": "local proof status",
         "runtime_proof_loop": "incomplete",
-        "incomplete_reason": INCOMPLETE_REASON,
-        "proof_chain_checklist_scope": PROOF_CHAIN_CHECKLIST_SCOPE,
-        "proof_chain_checklist": PROOF_CHAIN_CHECKLIST,
+        "incomplete_reason": registry["incomplete_reason"],
+        "proof_chain_checklist_scope": registry["proof_chain_checklist_scope"],
+        "proof_chain_checklist": registry["proof_chain_checklist"],
         "architecture_baseline": architecture_baseline,
-        "baseline_inventory": BASELINE_INVENTORY,
+        "baseline_inventory": registry["baseline_inventory"],
         "local_checks": [check.as_dict() for check in checks],
         "pytest": pytest_availability(),
-        "deferred_capabilities": DEFERRED_CAPABILITIES,
+        "deferred_capabilities": registry["deferred_capabilities"],
         "readiness_boundary": {
             "runtime_investigation_execution": "not-included",
             "live_integrations": "not-included",
