@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/replay_tool_catalog/v1.0.0/schema.json",
+  "title": "Replay Tool Catalog",
+  "description": "Bounded replay tool catalog snapshot used to determine retired-tool replay compatibility outcomes. It records tool identities and retirement ledger entries only; raw tool output and runtime state are excluded.",
+  "type": "object",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-compatibility": "backward",
+  "x-zovark-license": "Apache-2.0",
+  "x-zovark-owner": "replay-owner",
+  "x-zovark-visibility": "internal",
+  "x-zovark-breaking-change-requires-adr": true,
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "catalog_version",
+    "tools",
+    "retired_tools"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "catalog_version": {
+      "$ref": "#/$defs/VersionString"
+    },
+    "tools": {
+      "type": "array",
+      "description": "Active tool identities in this catalog snapshot.",
+      "minItems": 0,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ToolCatalogEntry"
+      }
+    },
+    "retired_tools": {
+      "type": "array",
+      "description": "Bounded retirement ledger for tools removed from the current active catalog.",
+      "minItems": 0,
+      "maxItems": 128,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/RetiredToolEntry"
+      }
+    }
+  },
+  "$defs": {
+    "BoundedIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "VersionString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._:+-]+$"
+    },
+    "BoundedText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "ToolCatalogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "capability_class",
+        "replay_safe"
+      ],
+      "properties": {
+        "tool_name": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "tool_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "capability_class": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "replay_safe": {
+          "type": "boolean"
+        },
+        "notes": {
+          "$ref": "#/$defs/BoundedText"
+        }
+      }
+    },
+    "RetiredToolEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "last_active_catalog_version",
+        "retired_in_catalog_version",
+        "failure_code",
+        "row_id",
+        "retirement_authority",
+        "retirement_reason"
+      ],
+      "properties": {
+        "tool_name": {
+          "$ref": "#/$defs/BoundedIdentifier"
+        },
+        "tool_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "last_active_catalog_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "retired_in_catalog_version": {
+          "$ref": "#/$defs/VersionString"
+        },
+        "failure_code": {
+          "type": "string",
+          "const": "REPLAY_TOOL_RETIRED"
+        },
+        "row_id": {
+          "type": "string",
+          "const": "tool_compatibility.tool_retired"
+        },
+        "retirement_authority": {
+          "type": "string",
+          "const": "ADR-0047"
+        },
+        "retirement_reason": {
+          "$ref": "#/$defs/BoundedText"
+        }
+      }
+    }
+  }
+}

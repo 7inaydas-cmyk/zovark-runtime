@@ -1,0 +1,17 @@
+schema_version: "1.0.0"
+catalog_version: "1.1.0"
+tools:
+  - tool_name: synthetic-tool
+    tool_version: "1.0.0"
+    capability_class: replay_fixture
+    replay_safe: true
+    notes: "Synthetic active tool retained for replay catalog validation."
+retired_tools:
+  - tool_name: synthetic-retired-tool
+    tool_version: "1.0.0"
+    last_active_catalog_version: "1.0.0"
+    retired_in_catalog_version: "1.1.0"
+    failure_code: REPLAY_TOOL_RETIRED
+    row_id: tool_compatibility.tool_retired
+    retirement_authority: ADR-0047
+    retirement_reason: "Synthetic bounded retirement entry for replay compatibility proof."

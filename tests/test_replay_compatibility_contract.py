@@ -24,10 +24,12 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
 REPLAY_COMPATIBILITY_MATRIX = CONTRACTS / "replay-compatibility.yaml"
 REPLAY_COMPATIBILITY_SCHEMA = CONTRACTS / "replay-compatibility.schema.json"
+REPLAY_TOOL_CATALOG_SCHEMA = CONTRACTS / "replay_tool_catalog.schema.json"
+REPLAY_TOOL_CATALOGS = CONTRACTS / "replay" / "catalogs"
 
 
-def _load_schema() -> dict:
-    return json.loads(REPLAY_COMPATIBILITY_SCHEMA.read_text(encoding="utf-8"))
+def _load_schema(schema_path: Path = REPLAY_COMPATIBILITY_SCHEMA) -> dict:
+    return json.loads(schema_path.read_text(encoding="utf-8"))
 
 
 def _load_json(path: Path) -> dict:
@@ -56,8 +58,8 @@ def _contract_registry():
     return registry
 
 
-def _validator():
-    schema = _load_schema()
+def _validator(schema_path: Path = REPLAY_COMPATIBILITY_SCHEMA):
+    schema = _load_schema(schema_path)
     validator_cls = validator_for(schema)
     validator_cls.check_schema(schema)
 
@@ -72,6 +74,22 @@ def _load_matrix() -> dict:
     matrix = yaml.safe_load(REPLAY_COMPATIBILITY_MATRIX.read_text(encoding="utf-8"))
     assert isinstance(matrix, dict)
     return matrix
+
+
+def _load_catalog(path: Path) -> dict:
+    catalog = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert isinstance(catalog, dict)
+    return catalog
+
+
+def _catalog_path_from_architecture_path(architecture_path: str) -> Path:
+    prefix = "architecture/replay/catalogs/"
+    assert architecture_path.startswith(prefix)
+    return REPLAY_TOOL_CATALOGS / architecture_path.removeprefix(prefix)
+
+
+def _tool_identity(entry: dict) -> tuple[str, str]:
+    return (entry["tool_name"], entry["tool_version"])
 
 
 def _failure_code_enum() -> tuple[str, ...]:
@@ -129,3 +147,66 @@ def test_replay_compatibility_row_coverage_contract_validates_against_canonical_
             validator.validate(row_with_unknown_code)
 
     print("REPLAY_COMPATIBILITY_ROW_COVERAGE_SCHEMA_OK")
+
+
+def test_replay_tool_catalog_authority_import_validates_against_canonical_schema() -> None:
+    matrix_validator = _validator()
+    catalog_validator = _validator(REPLAY_TOOL_CATALOG_SCHEMA)
+    matrix = _load_matrix()
+
+    matrix_validator.validate(matrix)
+
+    tool_catalog = matrix["tool_catalog"]
+    current_version = matrix["current_tool_catalog_version"]
+    assert current_version in tool_catalog
+
+    catalogs_by_version = {}
+    for catalog_version, catalog_entry in tool_catalog.items():
+        catalog_artifact = catalog_entry["catalog_artifact"]
+        catalog_path = _catalog_path_from_architecture_path(catalog_artifact)
+        assert catalog_path.is_file()
+
+        catalog = _load_catalog(catalog_path)
+        catalog_validator.validate(catalog)
+        assert catalog["catalog_version"] == catalog_version
+        catalogs_by_version[catalog_version] = catalog
+
+    current_catalog = catalogs_by_version[current_version]
+    current_active_identities = {_tool_identity(entry) for entry in current_catalog["tools"]}
+    current_retired_by_identity = {
+        _tool_identity(entry): entry
+        for entry in current_catalog["retired_tools"]
+    }
+    retired_identity = ("synthetic-retired-tool", "1.0.0")
+    retired_entry = current_retired_by_identity[retired_identity]
+
+    assert retired_entry["failure_code"] == "REPLAY_TOOL_RETIRED"
+    assert retired_entry["row_id"] == "tool_compatibility.tool_retired"
+    assert retired_entry["retired_in_catalog_version"] == current_version
+    assert retired_identity not in current_active_identities
+
+    recorded_version = retired_entry["last_active_catalog_version"]
+    recorded_catalog = catalogs_by_version[recorded_version]
+    recorded_active_identities = {_tool_identity(entry) for entry in recorded_catalog["tools"]}
+    assert retired_identity in recorded_active_identities
+
+    current_removed_by_identity = {
+        _tool_identity(entry): entry
+        for entry in tool_catalog[current_version]["removed_tools"]
+    }
+    removed_entry = current_removed_by_identity[retired_identity]
+    assert removed_entry["failure_code"] == "REPLAY_TOOL_RETIRED"
+    assert removed_entry["row_id"] == "tool_compatibility.tool_retired"
+    assert removed_entry["last_active_catalog_version"] == recorded_version
+    assert removed_entry["retired_in_catalog_version"] == current_version
+
+    matching_rows = [
+        row
+        for row in matrix["failure_outcome_rows"]
+        if "REPLAY_TOOL_RETIRED" in row["failure_codes"]
+    ]
+    assert len(matching_rows) == 1
+    assert matching_rows[0]["row_id"] == "tool_compatibility.tool_retired"
+    assert matching_rows[0]["component"] == "tool_catalog_entry"
+
+    print("REPLAY_TOOL_CATALOG_AUTHORITY_IMPORT_OK")

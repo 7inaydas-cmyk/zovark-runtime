@@ -1,0 +1,14 @@
+schema_version: "1.0.0"
+catalog_version: "1.0.0"
+tools:
+  - tool_name: synthetic-tool
+    tool_version: "1.0.0"
+    capability_class: replay_fixture
+    replay_safe: true
+    notes: "Synthetic active tool retained for replay catalog validation."
+  - tool_name: synthetic-retired-tool
+    tool_version: "1.0.0"
+    capability_class: replay_fixture
+    replay_safe: true
+    notes: "Synthetic tool present in the recorded catalog for retirement authority validation."
+retired_tools: []

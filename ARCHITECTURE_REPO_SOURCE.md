@@ -11,14 +11,14 @@ Status: provenance note for the Phase 0 runtime skeleton.
   contract addition, the replay failure contract, and the replay compatibility
   row coverage contract.
 - Architecture source commit:
-  `5411106481dd843f754dc6a86f7371e1468610fc`
+  `7bad0bb5ac5ac99dec007831dd67352f47255caa`
 
 ## Baseline Inventory
 
 - 26 ADR files: 25 binding ADRs plus ADR-0043 proposed/pending founder
   sign-off.
 - 39 invariants.
-- 26 authoritative schemas.
+- 27 authoritative schemas.
 - Replay compatibility contract:
   `architecture/replay-compatibility.yaml`.
 
@@ -33,8 +33,11 @@ Only the following contracts were copied:
 - `contracts/recommended_action.schema.json`
 - `contracts/replay-compatibility.schema.json`
 - `contracts/replay-compatibility.yaml`
+- `contracts/replay/catalogs/1.0.0.yaml`
+- `contracts/replay/catalogs/1.1.0.yaml`
 - `contracts/replay_failure_record.schema.json`
 - `contracts/replay_record.schema.json`
+- `contracts/replay_tool_catalog.schema.json`
 - `contracts/scanner_finding_envelope.schema.json`
 - `contracts/verdict_envelope.schema.json`
 - `contracts/verdict_input.schema.json`
