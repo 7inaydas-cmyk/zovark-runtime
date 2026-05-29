@@ -1,0 +1,23 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Packaging / build artifacts
+build/
+dist/
+
+# Local environment / secrets (never commit real values)
+.env
+.env.*
+
+# OS / editor cruft
+.DS_Store
+.vscode/
