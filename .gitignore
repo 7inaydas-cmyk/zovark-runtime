@@ -10,6 +10,10 @@ __pycache__/
 .venv/
 venv/
 
+# uv lockfile — this repo's reproducibility path is pip (see .github/workflows/invariants.yml);
+# uv.lock is only generated as a side effect of running `uv run` locally and is not tracked.
+uv.lock
+
 # Packaging / build artifacts
 build/
 dist/
