@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/replay-report/v1.0.0/schema.json",
+  "title": "Proof Package — Replay Report",
+  "description": "Offline replay result: recorded-output re-validation with no live LLM/EDR/network. SHAPE contract only; the replay re-derivation itself is performed and re-checked by proof-package-verify.",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["audit_chain_entry", "replay_state"],
+  "$defs": {
+    "verdictValue": {
+      "type": "string",
+      "enum": ["benign", "confirmed_malicious", "inconclusive_insufficient_evidence", "suspicious_unconfirmed"]
+    },
+    "timestamp": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" }
+  },
+  "properties": {
+    "audit_chain_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_at", "entry_id", "event_type", "payload", "prev_entry_hash", "sequence", "signed_root", "tenant_id", "this_entry_hash"],
+      "properties": {
+        "created_at": { "$ref": "#/$defs/timestamp" },
+        "entry_id": { "type": "string", "pattern": "^audit-entry-[0-9]+$" },
+        "event_type": { "const": "tape_replayed" },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["evidence_hashes_verified", "replay_id", "replay_state", "tape_id", "verdict_matched", "verdict_recomputed"],
+          "properties": {
+            "evidence_hashes_verified": { "const": true },
+            "replay_id": { "const": "replay-001" },
+            "replay_state": { "const": "succeeded" },
+            "tape_id": { "type": "string", "pattern": "^tape-[0-9a-f]{16}$" },
+            "verdict_matched": { "const": true },
+            "verdict_recomputed": { "$ref": "#/$defs/verdictValue" }
+          }
+        },
+        "prev_entry_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "sequence": { "const": 2 },
+        "signed_root": { "const": null },
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "this_entry_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "replay_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "completed_at", "evidence_hashes_verified", "mismatch_details", "mode", "model_versions_pin",
+        "no_live_edr_call", "no_live_llm_call", "replay_id", "replay_status", "schema_pin",
+        "started_at", "state", "tape_ref", "tenant_id", "tool_catalog_pin", "unsigned_tail_replay",
+        "verdict_match", "verdict_recomputed", "verification_detail"
+      ],
+      "properties": {
+        "completed_at": { "$ref": "#/$defs/timestamp" },
+        "evidence_hashes_verified": { "const": true },
+        "mismatch_details": { "const": null },
+        "mode": { "const": "recorded_output" },
+        "model_versions_pin": { "type": "array" },
+        "no_live_edr_call": { "const": true },
+        "no_live_llm_call": { "const": true },
+        "replay_id": { "const": "replay-001" },
+        "replay_status": { "const": "succeeded" },
+        "schema_pin": { "const": "tape/1.0" },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "state": { "const": "succeeded" },
+        "tape_ref": { "type": "string", "pattern": "^tape-[0-9a-f]{16}$" },
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "tool_catalog_pin": { "const": "none-slice-001" },
+        "unsigned_tail_replay": { "const": true },
+        "verdict_match": { "const": true },
+        "verdict_recomputed": { "const": true },
+        "verification_detail": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["evidence_entries_checked", "evidence_entries_failed", "evidence_entries_passed", "verdict_matched", "verdict_recomputed_value", "verdict_stored"],
+          "properties": {
+            "evidence_entries_checked": { "type": "integer", "minimum": 0 },
+            "evidence_entries_failed": { "const": 0 },
+            "evidence_entries_passed": { "type": "integer", "minimum": 0 },
+            "verdict_matched": { "const": true },
+            "verdict_recomputed_value": { "$ref": "#/$defs/verdictValue" },
+            "verdict_stored": { "$ref": "#/$defs/verdictValue" }
+          }
+        }
+      }
+    }
+  }
+}
