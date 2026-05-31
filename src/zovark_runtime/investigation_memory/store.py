@@ -65,11 +65,12 @@ class LocalInvestigationMemoryStore:
 
         content_path = self._content_path(content_hash)
         metadata_path = self._metadata_path(memory_ref_id)
-        # Refuse to write through a symlink (including a dangling one): otherwise a
-        # symlink pre-placed at a content-addressed path could redirect the write
+        # Refuse to write through a symlink at ANY path component (leaf or an
+        # intermediate directory such as objects/<2hex>), including dangling ones.
+        # Otherwise a pre-placed symlink could redirect the write — or the mkdir —
         # outside the store directory.
-        if content_path.is_symlink() or metadata_path.is_symlink():
-            raise MemoryObjectTamperError("refusing to write through a symlink in the memory store")
+        self._assert_no_symlink_escape(content_path)
+        self._assert_no_symlink_escape(metadata_path)
         content_path.parent.mkdir(parents=True, exist_ok=True)
         metadata_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -129,6 +130,26 @@ class LocalInvestigationMemoryStore:
         if len(content) != metadata.content_size_bytes:
             raise MemoryObjectTamperError("memory object content size mismatch")
         return metadata
+
+    def _assert_no_symlink_escape(self, path: Path) -> None:
+        """Refuse if any component of *path* under root_dir is a symlink.
+
+        Checks every component (objects/<2hex>/<hash>.bin and the metadata
+        equivalent), so neither the leaf nor an intermediate directory can redirect
+        a write or mkdir outside the store root.
+        """
+
+        try:
+            relative = path.relative_to(self.root_dir)
+        except ValueError as exc:
+            raise MemoryObjectTamperError("memory store path escapes the store root") from exc
+        current = self.root_dir
+        for part in relative.parts:
+            current = current / part
+            if current.is_symlink():
+                raise MemoryObjectTamperError(
+                    "refusing to write through a symlink in the memory store"
+                )
 
     def _content_path(self, content_hash: str) -> Path:
         return self.root_dir / "objects" / content_hash[:2] / f"{content_hash}.bin"

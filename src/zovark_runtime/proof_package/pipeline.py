@@ -165,12 +165,26 @@ def _assert_bounded_and_finite(value: Any, max_depth: int, _depth: int = 0) -> N
     # would otherwise raise an uncaught ValueError during canonicalization.
     if isinstance(value, float) and not math.isfinite(value):
         raise ZovarkValidationError("input contains a non-finite number")
+    # Reject strings that cannot be UTF-8 encoded (e.g. lone surrogates from \uXXXX
+    # escapes), which would otherwise raise an uncaught UnicodeEncodeError later.
+    if isinstance(value, str):
+        _assert_utf8_encodable(value)
     if isinstance(value, dict):
-        for item in value.values():
+        for key, item in value.items():
+            _assert_utf8_encodable(key)
             _assert_bounded_and_finite(item, max_depth, _depth + 1)
     elif isinstance(value, list):
         for item in value:
             _assert_bounded_and_finite(item, max_depth, _depth + 1)
+
+
+def _assert_utf8_encodable(text: str) -> None:
+    try:
+        text.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ZovarkValidationError(
+            "input contains a string that is not valid UTF-8 (e.g. a lone surrogate)"
+        ) from exc
 
 
 def _assert_output_dir_safe(out_path: Path) -> None:

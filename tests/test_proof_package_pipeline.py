@@ -251,6 +251,27 @@ def test_memory_store_symlink_is_refused(tmp_path: Path) -> None:
     assert not escape.exists()  # nothing written through the symlink
 
 
+def test_memory_store_symlinked_parent_dir_is_refused(tmp_path: Path) -> None:
+    """A symlinked intermediate store directory (not just the leaf) must be refused."""
+    memory = tmp_path / "mem"
+    (memory / "objects").mkdir(parents=True)
+    escape = tmp_path / "ESCAPE"
+    escape.mkdir()
+    (memory / "objects" / "0e").symlink_to(escape)  # symlinked 2-hex prefix dir
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(FIXTURE, tmp_path / "pkg", tenant_id="tenant-001", memory_dir=memory)
+    assert list(escape.iterdir()) == []  # nothing written into the escape target
+
+
+def test_lone_surrogate_string_input_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "surr.json"
+    bad.write_text(
+        '{"alert_id":"\\ud800","alert_type":"edr_alert","timestamp":"2026-05-01T10:00:00Z"}'
+    )
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
 def test_non_finite_overflow_input_rejected(tmp_path: Path) -> None:
     bad = tmp_path / "inf.json"
     bad.write_text('{"alert_id":"x","timestamp":"2026-05-01T10:00:00Z","v":1e999}')
