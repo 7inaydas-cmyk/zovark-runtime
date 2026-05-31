@@ -72,7 +72,26 @@ def normalize_evidence(raw_input: dict[str, Any]) -> list[dict[str, Any]]:
 
     if not entries:
         raise ZovarkValidationError("raw input did not produce any evidence")
-    return entries
+    return _dedupe_entries(entries)
+
+
+def _dedupe_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Drop exact-duplicate evidence deterministically (first occurrence wins).
+
+    Two events that canonicalize to the same (source_type, content) yield the same
+    content-addressed evidence_id; keeping both would collide on the unique-id
+    invariant. Dedup preserves input order and is a no-op when there are no duplicates,
+    so single-event inputs (and the V1 fixture) are unchanged.
+    """
+    seen: set[str] = set()
+    deduped: list[dict[str, Any]] = []
+    for entry in entries:
+        evidence_id = entry["evidence_id"]
+        if evidence_id in seen:
+            continue
+        seen.add(evidence_id)
+        deduped.append(entry)
+    return deduped
 
 
 def _entries_from_array(

@@ -1,0 +1,55 @@
+{
+  "alert_id": "alert-multi-001",
+  "alert_type": "edr_alert",
+  "description": "Suspicious PowerShell execution with credential access and lateral movement",
+  "host": "workstation-77.corp.example",
+  "severity": "critical",
+  "timestamp": "2026-05-02T09:00:00Z",
+  "process_events": [
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1200,
+      "pid": 5000,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-02T09:00:01Z"
+    }
+  ],
+  "network_events": [
+    {
+      "destination_ip": "203.0.113.77",
+      "destination_port": 443,
+      "event_id": "ne-1",
+      "event_type": "network_event",
+      "pid": 5000,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-02T09:00:02Z"
+    }
+  ],
+  "credential_access_events": [
+    {
+      "event_id": "ce-1",
+      "event_type": "credential_access",
+      "pid": 5000,
+      "process": "powershell.exe",
+      "target_process": "lsass.exe",
+      "technique": "T1003.001",
+      "technique_name": "LSASS Memory",
+      "timestamp": "2026-05-02T09:00:03Z"
+    }
+  ],
+  "lateral_movement_events": [
+    {
+      "destination_host": "HOST-13",
+      "event_id": "le-1",
+      "event_type": "lateral_movement_attempt",
+      "process": "powershell.exe",
+      "status": "blocked_by_firewall",
+      "technique": "T1021.002",
+      "technique_name": "SMB/Windows Admin Shares",
+      "timestamp": "2026-05-02T09:00:04Z"
+    }
+  ]
+}

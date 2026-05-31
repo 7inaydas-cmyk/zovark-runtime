@@ -1,0 +1,50 @@
+{
+  "alert_id": "alert-multi-002",
+  "alert_type": "edr_alert",
+  "description": "PowerShell beaconing with duplicate telemetry and multiple network events",
+  "host": "workstation-88.corp.example",
+  "severity": "high",
+  "timestamp": "2026-05-03T11:00:00Z",
+  "process_events": [
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1300,
+      "pid": 6000,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-03T11:00:01Z"
+    },
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1300,
+      "pid": 6000,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-03T11:00:01Z"
+    }
+  ],
+  "network_events": [
+    {
+      "destination_ip": "203.0.113.88",
+      "destination_port": 443,
+      "event_id": "ne-1",
+      "event_type": "network_event",
+      "pid": 6000,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-03T11:00:02Z"
+    },
+    {
+      "destination_ip": "203.0.113.89",
+      "destination_port": 443,
+      "event_id": "ne-2",
+      "event_type": "network_event",
+      "pid": 6000,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-03T11:00:03Z"
+    }
+  ]
+}
