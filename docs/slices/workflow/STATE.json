@@ -14,8 +14,8 @@
   "current": {
     "branch": "main",
     "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
-    "current_slice": 7,
-    "current_phase": "slice7 committed (staging)",
+    "current_slice": 8,
+    "current_phase": "slice8 committed (staging); finalizing",
     "current_branch": "slices-5-8-staging"
   },
   "baseline": {
@@ -28,7 +28,7 @@
   "tests": {
     "passed": null,
     "failed": null,
-    "last_full_suite": "324 passed"
+    "last_full_suite": "334 passed"
   },
   "proof_package_hashes": {
     "canonical": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
@@ -41,7 +41,7 @@
     "slice4": "43f5812 (merged main)",
     "slice5": "3f6f9c7 (staging)",
     "slice6": "68a6c95 (staging)",
-    "slice7": null,
+    "slice7": "65b0d60 (staging)",
     "slice8": null
   },
   "branches": {

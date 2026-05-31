@@ -110,6 +110,10 @@ def run_proof_package(
 
     tape = build_completed_tape(raw_input, tenant_id=tenant_id, memory_store=store)
     manifest = write_proof_package(tape, out_path)
+    # Slice 8: runtime schema enforcement (fail-closed) on the emitted artifacts.
+    from zovark_runtime.proof_package.schema_enforce import enforce_proof_package_schemas
+
+    enforce_proof_package_schemas(out_path)
     return {
         "artifacts": manifest,
         "expected_files": list(EXPECTED_OUTPUT_FILES),

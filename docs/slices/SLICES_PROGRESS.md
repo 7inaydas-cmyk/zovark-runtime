@@ -87,3 +87,15 @@ main hash 8749bf8a… unchanged; staging baseline 424d858c…. No unsafe partial
 - Unresolved DANGEROUS-DIRECTION: 0.
 
 | 7 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |
+
+## Slice 8 — runtime schema enforcement + proof-status (2026-06-01) [STAGING ONLY]
+- Files: proof_package/schema_enforce.py (dependency-free validator), verify.py + pipeline.py
+  (fail-closed gates), tests/test_schema_enforce.py, docs.
+- Runtime enforces the 8 schemas fail-closed; zero-dep (runs under plain python3); schemas
+  necessary-not-sufficient (re-derivation authoritative; forgery still rejected). proof-status
+  never falsely complete; ADR-0053 deferred (FAIL-SAFE). Canonical staging hash 424d858c… unchanged.
+- 10 schema tests; full suite 334 passed; Phase-0 PASS.
+- Independent audit: found 1 DANGEROUS-DIRECTION (bool/numeric const false-accept) → FIXED
+  (_json_equal) → re-audit CONFIRMED CLOSED (1932-mutation jsonschema parity). 0 unresolved.
+
+| 8 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |

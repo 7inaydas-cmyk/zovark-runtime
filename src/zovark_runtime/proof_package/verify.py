@@ -67,6 +67,14 @@ def verify_proof_package_strict(package_dir: str | Path) -> dict[str, Any]:
         )
 
     summary["findings_rederived_from_evidence"] = True
+
+    # Step 3 (Slice 8): runtime schema enforcement, fail-closed. This is an ADDITIONAL
+    # shape gate; it does NOT replace the re-derivation above, which remains the semantic
+    # authority. Schemas are necessary-not-sufficient.
+    from zovark_runtime.proof_package.schema_enforce import enforce_proof_package_schemas
+
+    enforce_proof_package_schemas(package_path)
+    summary["schemas_enforced"] = True
     return summary
 
 

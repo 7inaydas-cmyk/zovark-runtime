@@ -56,4 +56,15 @@ slice below needs an explicit operator decision before any adoption to `main`.
   request changes. (Real model adapter is future work; only the deterministic fake ships.)
 
 ## Slice 8 — runtime schema enforcement + proof-status
-- _(to be completed when Slice 8 is built on staging)_
+- **Runtime schema enforcement points:** `enforce_proof_package_schemas` (dependency-free
+  validator) runs fail-closed in `pipeline.run_proof_package` (post-write) and
+  `verify.verify_proof_package_strict` (additional gate). Schemas are necessary-not-sufficient;
+  proof-package-verify re-derivation remains the semantic authority (shape-valid forgery still
+  rejected). Zero runtime dependency preserved (no jsonschema at runtime).
+- **proof-status behavior:** `runtime_proof_loop` stays `incomplete`; no false complete.
+- **ADR-0053 authority status:** NOT present in runtime; deferment documented as FAIL-SAFE
+  (not invented). A real proof-loop completion integration would require the architecture
+  authority (read-only here) and a separate decision.
+- **OPERATOR DECISION REQUIRED:** approve runtime schema enforcement + the incomplete
+  proof-status posture for merge, or request changes (e.g. authoring standalone authority
+  JSON schemas / importing ADR-0053 — separate architecture change).
