@@ -65,6 +65,11 @@ class LocalInvestigationMemoryStore:
 
         content_path = self._content_path(content_hash)
         metadata_path = self._metadata_path(memory_ref_id)
+        # Refuse to write through a symlink (including a dangling one): otherwise a
+        # symlink pre-placed at a content-addressed path could redirect the write
+        # outside the store directory.
+        if content_path.is_symlink() or metadata_path.is_symlink():
+            raise MemoryObjectTamperError("refusing to write through a symlink in the memory store")
         content_path.parent.mkdir(parents=True, exist_ok=True)
         metadata_path.parent.mkdir(parents=True, exist_ok=True)
 

@@ -238,6 +238,34 @@ def test_oversized_input_rejected(tmp_path: Path) -> None:
         run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
 
 
+def test_memory_store_symlink_is_refused(tmp_path: Path) -> None:
+    """A dangling symlink pre-placed at a content-addressed store path must not be
+    written through (no file-escape)."""
+    memory = tmp_path / "mem"
+    obj_dir = memory / "objects" / "3e"
+    obj_dir.mkdir(parents=True)
+    escape = tmp_path / "ESCAPE_TARGET"
+    (obj_dir / "3ea98cdd7e5ced361eb0a37c6917f9a7b61737945ee310b77d2e37683b864cd6.bin").symlink_to(escape)
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(FIXTURE, tmp_path / "pkg", tenant_id="tenant-001", memory_dir=memory)
+    assert not escape.exists()  # nothing written through the symlink
+
+
+def test_non_finite_overflow_input_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "inf.json"
+    bad.write_text('{"alert_id":"x","timestamp":"2026-05-01T10:00:00Z","v":1e999}')
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
+def test_oversized_integer_literal_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "bigint.json"
+    bad.write_text('{"alert_id":"x","timestamp":"2026-05-01T10:00:00Z","v":'
+                   + "9" * 100000 + "}")
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
 def test_build_completed_tape_without_store_is_offline(tmp_path: Path) -> None:
     raw = json.loads(FIXTURE.read_text())
     tape = build_completed_tape(raw, tenant_id="tenant-001", memory_store=None)

@@ -12,6 +12,7 @@ No network, no live LLM, no wall clock, no randomness. See /DESIGN.md.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -143,26 +144,33 @@ def _safe_load_input(input_path: Path) -> dict[str, Any]:
         parsed = json.loads(text, parse_constant=_reject_constant)
     except json.JSONDecodeError as exc:
         raise ZovarkValidationError(f"input is not valid JSON: {input_path}") from exc
-    except RecursionError as exc:  # pragma: no cover - defensive
+    except RecursionError as exc:
         raise ZovarkValidationError("input nesting is too deep") from exc
+    except ValueError as exc:
+        # e.g. an integer literal exceeding Python's int-string conversion limit.
+        raise ZovarkValidationError(f"input contains an out-of-range value: {exc}") from exc
 
     if not isinstance(parsed, dict):
         raise ZovarkValidationError("proof-package input must be a JSON object")
-    _assert_bounded_depth(parsed, _MAX_INPUT_DEPTH)
+    _assert_bounded_and_finite(parsed, _MAX_INPUT_DEPTH)
     return parsed
 
 
-def _assert_bounded_depth(value: Any, max_depth: int, _depth: int = 0) -> None:
+def _assert_bounded_and_finite(value: Any, max_depth: int, _depth: int = 0) -> None:
     if _depth > max_depth:
         raise ZovarkValidationError(
             f"input nesting exceeds the {max_depth}-level limit"
         )
+    # Reject non-finite floats that bypass parse_constant (e.g. 1e999 -> inf), which
+    # would otherwise raise an uncaught ValueError during canonicalization.
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ZovarkValidationError("input contains a non-finite number")
     if isinstance(value, dict):
         for item in value.values():
-            _assert_bounded_depth(item, max_depth, _depth + 1)
+            _assert_bounded_and_finite(item, max_depth, _depth + 1)
     elif isinstance(value, list):
         for item in value:
-            _assert_bounded_depth(item, max_depth, _depth + 1)
+            _assert_bounded_and_finite(item, max_depth, _depth + 1)
 
 
 def _assert_output_dir_safe(out_path: Path) -> None:
