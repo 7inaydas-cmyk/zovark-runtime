@@ -44,6 +44,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Verify an exported proof package offline (re-derivation).",
     )
     verify.add_argument("--package", required=True, help="Proof-package directory")
+
+    bridge = subcommands.add_parser(
+        "adr0046-bridge",
+        help="Emit the additive ADR-0046 bridge artifacts from a proof package "
+        "(separate dir; never part of the canonical package).",
+    )
+    bridge.add_argument("--package", required=True, help="Generated proof-package directory")
+    bridge.add_argument("--output", required=True, help="Output directory for bridge artifacts")
     return parser
 
 
@@ -66,6 +74,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _proof_package_build(args)
     if args.command == "proof-package-verify":
         return _proof_package_verify(args)
+    if args.command == "adr0046-bridge":
+        return _adr0046_bridge(args)
 
     parser.error(f"unsupported command: {args.command}")
     return 2
@@ -109,6 +119,23 @@ def _proof_package_verify(args: argparse.Namespace) -> int:
         print(f"proof-package verification error: {exc}", file=sys.stderr)
         return 4
     _write_json(dict(summary))
+    return 0
+
+
+def _adr0046_bridge(args: argparse.Namespace) -> int:
+    from .proof_package import ZovarkValidationError
+    from .proof_package.adr0046_bridge import load_tape, write_bridge
+
+    try:
+        tape = load_tape(Path(args.package))
+        written = write_bridge(tape, Path(args.output))
+    except ZovarkValidationError as exc:
+        print(f"adr0046-bridge failed: {exc}", file=sys.stderr)
+        return 3
+    except OSError as exc:
+        print(f"adr0046-bridge output error: {exc}", file=sys.stderr)
+        return 4
+    _write_json({"artifacts": written})
     return 0
 
 
