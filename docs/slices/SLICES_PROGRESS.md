@@ -56,3 +56,14 @@
 - Unresolved DANGEROUS-DIRECTION: 0. FAIL-SAFE: provisional baseline (operator decision).
 
 | 5 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |
+
+## Slice 6 — EDR connector ingest boundary (2026-06-01) [STAGING ONLY]
+- Files: connectors/{__init__,edr_connector}.py, cli.py (edr-connect), tests/test_edr_connector.py,
+  fixtures/edr-provider-001.json, docs.
+- Deterministic pipeline + replay/verify proven network-free (socket-block monkeypatch);
+  LiveEdrConnector lazy-imports urllib, https-only, fail-closed without creds. No secrets.
+- Connector tests 8 passed; full suite 315 passed; Phase-0 PASS. Independent audit: PASS,
+  zero DANGEROUS-DIRECTION (3 FAIL-SAFE notes; SSRF note closed with https-only guard).
+- Unresolved DANGEROUS-DIRECTION: 0.
+
+| 6 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |

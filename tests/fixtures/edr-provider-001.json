@@ -1,0 +1,30 @@
+{
+  "alert_id": "provider-alert-001",
+  "host": "workstation-60.corp.example",
+  "severity": "high",
+  "timestamp": "2026-05-07T12:00:00Z",
+  "description": "Suspicious PowerShell execution detected by EDR provider",
+  "detections": [
+    {
+      "kind": "process",
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1700,
+      "pid": 9100,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-07T12:00:01Z"
+    },
+    {
+      "kind": "network",
+      "destination_ip": "203.0.113.60",
+      "destination_port": 443,
+      "event_id": "ne-1",
+      "event_type": "network_event",
+      "pid": 9100,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-07T12:00:02Z"
+    }
+  ]
+}

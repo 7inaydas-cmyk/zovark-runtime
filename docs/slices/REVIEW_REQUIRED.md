@@ -29,7 +29,15 @@ slice below needs an explicit operator decision before any adoption to `main`.
   explicit architecture change would be required; not done here).
 
 ## Slice 6 — EDR connector ingest boundary
-- _(to be completed when Slice 6 is built on staging)_
+- **Connector boundary:** `connectors/edr_connector.py` normalizes a provider alert into
+  the deterministic input shape. `RecordedEdrConnector` (offline, disk) used in CI/tests;
+  `LiveEdrConnector` is the only network site (lazy urllib inside `fetch()`, https-only,
+  creds from env ZOVARK_EDR_ENDPOINT/ZOVARK_EDR_TOKEN, fail-closed if missing).
+- **Deterministic/replay network-free:** proof-package generation + proof-package-verify
+  run under a socket-blocking monkeypatch; proof_package package imports no network module.
+- **Secret scan:** clean — env placeholders only; fixture uses RFC-5737 doc IP + .example.
+- **OPERATOR DECISION REQUIRED:** approve the connector ingest boundary for merge (live
+  fetch is operator-gated, off the deterministic path), or request changes.
 
 ## Slice 7 — recorded live-AI investigation
 - _(to be completed when Slice 7 is built on staging)_

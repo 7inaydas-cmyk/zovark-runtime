@@ -52,6 +52,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bridge.add_argument("--package", required=True, help="Generated proof-package directory")
     bridge.add_argument("--output", required=True, help="Output directory for bridge artifacts")
+
+    connect = subcommands.add_parser(
+        "edr-connect",
+        help="Normalize a recorded EDR provider alert into the deterministic input shape "
+        "(offline). Live fetch requires ZOVARK_EDR_ENDPOINT/ZOVARK_EDR_TOKEN env.",
+    )
+    connect.add_argument("--recorded", required=True, help="Recorded provider response JSON")
+    connect.add_argument("--output", required=True, help="Output deterministic input JSON path")
     return parser
 
 
@@ -76,9 +84,29 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _proof_package_verify(args)
     if args.command == "adr0046-bridge":
         return _adr0046_bridge(args)
+    if args.command == "edr-connect":
+        return _edr_connect(args)
 
     parser.error(f"unsupported command: {args.command}")
     return 2
+
+
+def _edr_connect(args: argparse.Namespace) -> int:
+    from .connectors import ConnectorError, RecordedEdrConnector
+
+    try:
+        deterministic = RecordedEdrConnector(Path(args.recorded)).normalize()
+        Path(args.output).write_text(
+            json.dumps(deterministic, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    except ConnectorError as exc:
+        print(f"edr-connect failed: {exc}", file=sys.stderr)
+        return 3
+    except OSError as exc:
+        print(f"edr-connect output error: {exc}", file=sys.stderr)
+        return 4
+    _write_json({"output": str(Path(args.output))})
+    return 0
 
 
 def _proof_package_build(args: argparse.Namespace) -> int:
