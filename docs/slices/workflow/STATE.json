@@ -14,8 +14,8 @@
   "current": {
     "branch": "main",
     "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
-    "current_slice": 3,
-    "current_phase": "slice3 built+audited, committing"
+    "current_slice": 4,
+    "current_phase": "slice4 built+audited, committing"
   },
   "baseline": {
     "canonical_combined_sha256_last_known": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0",
@@ -27,7 +27,7 @@
   "tests": {
     "passed": null,
     "failed": null,
-    "last_full_suite": "275 passed"
+    "last_full_suite": "290 passed"
   },
   "proof_package_hashes": {
     "canonical": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
@@ -36,7 +36,7 @@
     "canonical": "verified/0/findings_rederived=true"
   },
   "commits_per_slice": {
-    "slice3": null,
+    "slice3": "c40b4bc (merged main)",
     "slice4": null,
     "slice5": null,
     "slice6": null,

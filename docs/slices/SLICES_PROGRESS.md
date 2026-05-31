@@ -33,3 +33,14 @@
 |---|---|---|---|
 | preflight | main | 274fcf4 | ✅ baseline green |
 | 3 | main | (pending PR) | ✅ green + audited |
+
+## Slice 4 — multi-alert / multi-evidence (2026-06-01)
+- Files: `ingest.py` (+`_dedupe_entries`), `tests/fixtures/edr-multi-00{1,2,3}.json`,
+  `tests/test_multi_evidence.py`, docs (SLICE_4_PLAN/VERIFY/AUDIT/INDEP_AUDIT).
+- Commands: multi tests `15 passed`; full suite `290 passed`; Phase-0 PASS.
+- 3 fixtures generate+verify (LSASS+SMB exercised in 001/003); dedup 5→4 on 002;
+  out-of-order input fails closed; canonical `edr-sample-001` hash `8749bf8a…` UNCHANGED.
+- Self-audit + independent audit: zero DANGEROUS-DIRECTION (2 safe FAIL-SAFE notes).
+- Unresolved DANGEROUS-DIRECTION: 0.
+
+| 4 | main | (pending PR) | ✅ green + audited |
