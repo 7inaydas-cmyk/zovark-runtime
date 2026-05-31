@@ -1,0 +1,41 @@
+{
+  "schema": "zovark-slices-workflow-state/v1",
+  "note": "Machine-readable workflow state. The controller updates this after each phase. Values below are the starting snapshot recorded at workflow-file creation; RE-DERIVE from git/disk at execution start.",
+  "starting": {
+    "branch": "main",
+    "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
+    "remote": "https://github.com/7inaydas-cmyk/zovark-runtime.git",
+    "recorded_at_utc": "2026-06-01",
+    "slice2_complete": true,
+    "schemas_count": 8,
+    "verify_md_present": true,
+    "audit_slice2_present": true
+  },
+  "current": {
+    "branch": "main",
+    "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
+    "current_slice": null,
+    "current_phase": "workflow-files-created (not yet executing)"
+  },
+  "baseline": {
+    "canonical_combined_sha256_last_known": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0",
+    "must_recompute_before_use": true,
+    "main_hash_must_not_change_for_slices_5_8": true
+  },
+  "workers_spawned": [],
+  "commands_run": [],
+  "tests": { "passed": null, "failed": null, "last_full_suite": null },
+  "proof_package_hashes": {},
+  "verifier_statuses": {},
+  "commits_per_slice": {
+    "slice3": null, "slice4": null, "slice5": null,
+    "slice6": null, "slice7": null, "slice8": null
+  },
+  "branches": {
+    "main": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
+    "slices_5_8_staging": null
+  },
+  "unresolved_fail_safe_notes": [],
+  "unresolved_dangerous_direction_findings": [],
+  "stop_reason": null
+}
