@@ -28,7 +28,7 @@ NINE = (
     "verdict.json", "edr-handoff.json", "audit-chain-entry.json", "replay-report.json",
     "customer-report.md",
 )
-CANONICAL = "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
+CANONICAL = "424d858c40e87730a09fc1e9b610194e76dd1e22dc5e219c9f50ca7e412bcf39"
 MULTI = ["edr-multi-001", "edr-multi-002", "edr-multi-003"]
 
 

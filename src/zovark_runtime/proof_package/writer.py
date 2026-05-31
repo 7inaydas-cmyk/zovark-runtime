@@ -233,11 +233,36 @@ def render_customer_report(tape: dict[str, Any]) -> str:
     bytes_received = network.get("bytes_received", 0)
     kib_received = bytes_received // 1024 if isinstance(bytes_received, int) else 0
     kb_received = round(bytes_received / 1000) if isinstance(bytes_received, int) else 0
-    credential_technique = _string_from(credential, "technique", default="T1003.001")
+    credential_technique = _string_from(credential, "technique", default="")
     lateral_host = _string_from(lateral, "destination_host", default="target host")
     alert_timestamp = _string_from(alert, "timestamp", default=tape["created_at"])
     event_minute = _utc_minute(alert_timestamp)
     event_date = alert_timestamp[:10]
+    # Evidence-gated narrative: only assert LSASS / SMB when the recorded evidence
+    # actually references them (never fabricate a technique).
+    has_lsass = _content_mentions(credential, "lsass", "t1003.001")
+    is_smb = _content_mentions(lateral, "smb", "t1021.002")
+    cred_tech_label = credential_technique or "credential access"
+    credential_detail = (
+        f"LSASS memory read ({credential_technique})" if has_lsass
+        else f"credential access ({cred_tech_label})"
+    )
+    credential_step = (
+        f"LSASS memory access — a credential-dumping technique ({credential_technique})."
+        if has_lsass
+        else f"A credential-access technique ({cred_tech_label})."
+    )
+    lateral_detail = f"SMB to {lateral_host} (blocked)" if is_smb else f"lateral movement to {lateral_host} (blocked)"
+    lateral_step = (
+        f"A lateral-movement attempt to {lateral_host} via SMB (blocked by firewall)."
+        if is_smb
+        else f"A lateral-movement attempt to {lateral_host} (blocked by firewall)."
+    )
+    credential_recovery = (
+        f"Rotate credentials for {user} (LSASS was accessed; assume credentials compromised)."
+        if has_lsass
+        else f"Rotate credentials for {user} as a precaution given the recorded credential-access event."
+    )
 
     lines = [
         "# Zovark Proof Package",
@@ -265,17 +290,17 @@ def render_customer_report(tape: dict[str, Any]) -> str:
         "",
         "## 1. What happened?",
         "",
-        f"At {event_minute} UTC on {event_date}, a user on {host} opened a document that caused",
-        f"Microsoft Word (`{source_process}`) to spawn a hidden PowerShell process with an",
-        "encoded command. The PowerShell process then:",
+        f"{_string_from(alert, 'description', default='Suspicious activity detected')}",
         "",
-        f"1. Connected to an external IP ({destination_ip}) over HTTPS and downloaded {kib_received} KB.",
-        f"2. Attempted to read LSASS memory — a credential dumping technique ({credential_technique}).",
-        f"3. Attempted to move laterally to {lateral_host} via SMB (blocked by firewall).",
+        f"At {event_minute} UTC on {event_date}, on {host}, the recorded evidence shows an",
+        "encoded PowerShell process. From that evidence the investigation observed:",
         "",
-        "The sequence is consistent with a phishing-delivered implant executing a",
-        "multi-stage attack: initial access → C2 communication → credential theft →",
-        "lateral movement.",
+        f"1. An external HTTPS connection to {destination_ip} (C2 communication).",
+        f"2. {credential_step}",
+        f"3. {lateral_step}",
+        "",
+        "Every statement above maps to a recorded evidence item in the table below; the",
+        "verdict is derived deterministically from these findings (no model contributed).",
         "",
         "---",
         "",
@@ -294,11 +319,11 @@ def render_customer_report(tape: dict[str, Any]) -> str:
         ),
         (
             f"| 4 | {ev_short[3]} | credential_access | {_time_only(credential['timestamp'])} | "
-            f"LSASS memory read ({credential_technique}) |"
+            f"{credential_detail} |"
         ),
         (
             f"| 5 | {ev_short[4]} | lateral_movement_attempt | {_time_only(lateral['timestamp'])} | "
-            f"SMB to {lateral_host} (blocked) |"
+            f"{lateral_detail} |"
         ),
         "",
         "Each evidence entry carries a SHA-256 hash of its exact content. The hashes are",
@@ -372,9 +397,7 @@ def render_customer_report(tape: dict[str, Any]) -> str:
             f"**Lateral movement:** {lateral_host} was targeted but the attempt was blocked by the",
             "firewall before isolation. No other hosts are known to be compromised.",
             "",
-            f"**User impact:** {user} is the active user on {host}. Credential rotation",
-            "for this account is recommended regardless of isolation outcome, given the LSASS",
-            "access event.",
+            f"**User impact:** {user} is the active user on {host}. {credential_recovery}",
             "",
             "---",
             "",
@@ -389,8 +412,7 @@ def render_customer_report(tape: dict[str, Any]) -> str:
             "- Reversal window: 4 hours from dispatch.",
             "",
             "**Regardless of isolation outcome:**",
-            f"- Rotate credentials for {user} (LSASS was accessed; assume credentials compromised).",
-            "- Review the downloaded payload at `C:\\Temp\\svchost.exe` (decoded from the PowerShell command).",
+            f"- {credential_recovery}",
             f"- Investigate the C2 IP {destination_ip}.",
             "",
             "---",
@@ -807,6 +829,19 @@ def _string_from(source: dict[str, Any], key: str, *, default: str) -> str:
     if isinstance(value, str) and value:
         return value
     return default
+
+
+def _content_mentions(raw_content: dict[str, Any], *needles: str) -> bool:
+    """True if any string value in raw_content contains any needle (case-insensitive).
+
+    Used to gate narrative claims (e.g. LSASS/SMB) on actual recorded evidence.
+    """
+    for value in raw_content.values():
+        if isinstance(value, str):
+            low = value.lower()
+            if any(needle in low for needle in needles):
+                return True
+    return False
 
 
 def _time_only(timestamp: str) -> str:

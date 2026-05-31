@@ -39,7 +39,7 @@ from zovark_runtime.verdict_derivation import derive_verdict
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "contracts"
 FIXTURE = ROOT / "tests" / "fixtures" / "edr-sample-001.json"
-CANONICAL_COMBINED = "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
+CANONICAL_COMBINED = "424d858c40e87730a09fc1e9b610194e76dd1e22dc5e219c9f50ca7e412bcf39"
 NINE = (
     "investigation-tape.json", "evidence-ledger.json", "timeline.json", "findings.json",
     "verdict.json", "edr-handoff.json", "audit-chain-entry.json", "replay-report.json",

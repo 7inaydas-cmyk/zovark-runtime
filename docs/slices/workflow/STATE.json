@@ -14,8 +14,9 @@
   "current": {
     "branch": "main",
     "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
-    "current_slice": 4,
-    "current_phase": "slice4 built+audited, committing"
+    "current_slice": 5,
+    "current_phase": "slice5 built+audited (staging), committing",
+    "current_branch": "slices-5-8-staging"
   },
   "baseline": {
     "canonical_combined_sha256_last_known": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0",
@@ -27,7 +28,7 @@
   "tests": {
     "passed": null,
     "failed": null,
-    "last_full_suite": "290 passed"
+    "last_full_suite": "307 passed"
   },
   "proof_package_hashes": {
     "canonical": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
@@ -37,7 +38,7 @@
   },
   "commits_per_slice": {
     "slice3": "c40b4bc (merged main)",
-    "slice4": null,
+    "slice4": "43f5812 (merged main)",
     "slice5": null,
     "slice6": null,
     "slice7": null,
@@ -45,7 +46,7 @@
   },
   "branches": {
     "main": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
-    "slices_5_8_staging": null
+    "slices_5_8_staging": "(building)"
   },
   "unresolved_fail_safe_notes": [],
   "unresolved_dangerous_direction_findings": [],

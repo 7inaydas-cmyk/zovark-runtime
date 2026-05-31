@@ -321,10 +321,14 @@ def _rollback_plan(
         recovery_notes = (
             "In a live EDR integration, the expected reversal action would be "
             "release_isolation. In Slice 001, this is a recommendation only; "
-            "no EDR action is dispatched. "
-            f"Credential rotation for {_affected_user(tape)} is recommended regardless "
-            "of isolation outcome given the LSASS access event."
+            "no EDR action is dispatched."
         )
+        # Only assert a credential-access rationale when LSASS evidence actually exists.
+        if _has_lsass_evidence(tape):
+            recovery_notes += (
+                f" Credential rotation for {_affected_user(tape)} is recommended given "
+                "the recorded LSASS access event."
+            )
     else:
         reversal_action = "none"
         recovery_notes = (
@@ -355,6 +359,21 @@ def _affected_user(tape: dict[str, Any]) -> str:
         if isinstance(user, str) and user:
             return user
     return "the affected user"
+
+
+def _has_lsass_evidence(tape: dict[str, Any]) -> bool:
+    """True only if a recorded credential_access evidence item references LSASS.
+
+    Gates LSASS narrative so a handoff never asserts an LSASS access event that is not
+    backed by recorded evidence.
+    """
+    for entry in tape["raw_evidence"]:
+        if entry.get("source_type") != "credential_access":
+            continue
+        for value in entry["raw_content"].values():
+            if isinstance(value, str) and "lsass" in value.lower():
+                return True
+    return False
 
 
 def _blast_radius(
@@ -402,10 +421,19 @@ def _blocked_lateral_movement(tape: dict[str, Any]) -> list[str]:
             and destination_host
             and status == "blocked_by_firewall"
         ):
+            # Only label the attempt "SMB" when the evidence actually indicates SMB.
+            attempt = "SMB attempt" if _content_mentions_smb(raw_content) else "lateral-movement attempt"
             blocked.append(
-                f"{destination_host} (SMB attempt was already blocked by firewall)"
+                f"{destination_host} ({attempt} was already blocked by firewall)"
             )
     return blocked
+
+
+def _content_mentions_smb(raw_content: dict[str, Any]) -> bool:
+    for value in raw_content.values():
+        if isinstance(value, str) and ("smb" in value.lower() or "t1021.002" in value.lower()):
+            return True
+    return False
 
 
 def _validate_handoff(handoff: dict[str, Any], *, tape: dict[str, Any]) -> None:

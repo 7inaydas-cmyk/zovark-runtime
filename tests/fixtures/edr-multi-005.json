@@ -1,0 +1,43 @@
+{
+  "alert_id": "alert-multi-005",
+  "alert_type": "edr_alert",
+  "description": "Suspicious PowerShell with a blocked non-SMB (RDP) lateral movement attempt",
+  "host": "workstation-55.corp.example",
+  "severity": "high",
+  "timestamp": "2026-05-06T07:00:00Z",
+  "process_events": [
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1600,
+      "pid": 9000,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-06T07:00:01Z"
+    }
+  ],
+  "network_events": [
+    {
+      "destination_ip": "203.0.113.55",
+      "destination_port": 443,
+      "event_id": "ne-1",
+      "event_type": "network_event",
+      "pid": 9000,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-06T07:00:02Z"
+    }
+  ],
+  "lateral_movement_events": [
+    {
+      "destination_host": "HOST-91",
+      "event_id": "le-1",
+      "event_type": "lateral_movement_attempt",
+      "process": "powershell.exe",
+      "status": "blocked_by_firewall",
+      "technique": "T1021.001",
+      "technique_name": "Remote Desktop Protocol",
+      "timestamp": "2026-05-06T07:00:03Z"
+    }
+  ]
+}

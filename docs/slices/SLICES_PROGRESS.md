@@ -44,3 +44,15 @@
 - Unresolved DANGEROUS-DIRECTION: 0.
 
 | 4 | main | (pending PR) | ✅ green + audited |
+
+## Slice 5 — evidence-backed SOC report (2026-06-01) [STAGING ONLY]
+- Files: writer.py, handoff.py, findings.py (SMB rule), tests/test_report_traceability.py,
+  fixtures edr-multi-004/005, docs (PLAN/VERIFY/AUDIT/INDEP_AUDIT/REVIEW_REQUIRED/ADR... n/a).
+- Removed un-evidenced narrative (Word/document/phishing/svchost; unconditional LSASS;
+  hardcoded HOST-13 SMB finding); all LSASS/SMB claims now evidence-gated.
+- Baseline fork (staging): edr-sample-001 8749bf8a… -> 424d858c… (only edr-handoff.json
+  changed; verdict/evidence/replay byte-unchanged = semantic equivalence). main UNCHANGED.
+- 3 independent-audit cycles; F1/F2/F3 + Findings A/B all CLOSED. Full suite 307 passed.
+- Unresolved DANGEROUS-DIRECTION: 0. FAIL-SAFE: provisional baseline (operator decision).
+
+| 5 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |

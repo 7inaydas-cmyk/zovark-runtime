@@ -1,0 +1,55 @@
+{
+  "alert_id": "alert-multi-004",
+  "alert_type": "edr_alert",
+  "description": "Suspicious PowerShell with SAM-hive credential access (non-LSASS) and blocked SMB lateral movement",
+  "host": "workstation-44.corp.example",
+  "severity": "high",
+  "timestamp": "2026-05-05T08:00:00Z",
+  "process_events": [
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-1",
+      "event_type": "process_event",
+      "parent_pid": 1500,
+      "pid": 8000,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-05T08:00:01Z"
+    }
+  ],
+  "network_events": [
+    {
+      "destination_ip": "203.0.113.44",
+      "destination_port": 443,
+      "event_id": "ne-1",
+      "event_type": "network_event",
+      "pid": 8000,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-05T08:00:02Z"
+    }
+  ],
+  "credential_access_events": [
+    {
+      "event_id": "ce-1",
+      "event_type": "credential_access",
+      "pid": 8000,
+      "process": "powershell.exe",
+      "target_process": "reg.exe",
+      "technique": "T1003.002",
+      "technique_name": "Security Account Manager",
+      "timestamp": "2026-05-05T08:00:03Z"
+    }
+  ],
+  "lateral_movement_events": [
+    {
+      "destination_host": "HOST-31",
+      "event_id": "le-1",
+      "event_type": "lateral_movement_attempt",
+      "process": "powershell.exe",
+      "status": "blocked_by_firewall",
+      "technique": "T1021.002",
+      "technique_name": "SMB/Windows Admin Shares",
+      "timestamp": "2026-05-05T08:00:04Z"
+    }
+  ]
+}

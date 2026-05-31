@@ -51,7 +51,7 @@ RULES: tuple[dict[str, Any], ...] = (
         "mitre_technique": "T1021.002",
         "rule_id": "RULE-SMB-LATERAL-MOVEMENT",
         "severity": "high",
-        "title": "Lateral movement attempt to HOST-13 (blocked by firewall)",
+        "title": "Lateral movement attempt over SMB (blocked by firewall)",
     },
 )
 
@@ -331,11 +331,10 @@ def _lateral_movement_indicates_smb_attempt(raw_content: dict[str, Any]) -> bool
         "technique",
         "technique_name",
     )
-    return (
-        "t1021.002" in lateral_text
-        or "smb" in lateral_text
-        or "blocked_by_firewall" in lateral_text
-    )
+    # Fire only for genuine SMB lateral movement (technique T1021.002 or "smb"), so the
+    # SMB finding never mislabels a non-SMB blocked lateral movement. A bare
+    # "blocked_by_firewall" status no longer triggers an SMB-specific finding.
+    return "t1021.002" in lateral_text or "smb" in lateral_text
 
 
 def _text_fields(raw_content: dict[str, Any], *keys: str) -> str:
