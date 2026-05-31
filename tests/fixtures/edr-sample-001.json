@@ -1,0 +1,31 @@
+{
+  "alert_id": "alert-20260501-001",
+  "alert_type": "edr_alert",
+  "description": "Suspicious PowerShell execution detected",
+  "host": "workstation-42.corp.example",
+  "network_events": [
+    {
+      "destination_ip": "203.0.113.50",
+      "destination_port": 443,
+      "event_id": "ne-001",
+      "event_type": "network_event",
+      "pid": 4812,
+      "process_name": "powershell.exe",
+      "protocol": "HTTPS",
+      "timestamp": "2026-05-01T10:00:02Z"
+    }
+  ],
+  "process_events": [
+    {
+      "command_line": "powershell.exe -EncodedCommand <base64>",
+      "event_id": "pe-001",
+      "event_type": "process_event",
+      "parent_pid": 1024,
+      "pid": 4812,
+      "process_name": "powershell.exe",
+      "timestamp": "2026-05-01T10:00:01Z"
+    }
+  ],
+  "severity": "high",
+  "timestamp": "2026-05-01T10:00:00Z"
+}
