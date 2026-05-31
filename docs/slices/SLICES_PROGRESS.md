@@ -67,3 +67,10 @@
 - Unresolved DANGEROUS-DIRECTION: 0.
 
 | 6 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |
+
+## CHECKPOINT (2026-06-01) — safe partial
+Slices 3+4 merged to main (audited); slices 5+6 committed on slices-5-8-staging (audited,
+zero unresolved DANGEROUS-DIRECTION). Slices 7+8 remain. Checkpointed at a clean, committed
+boundary (context budget) so the safety-critical Slice 7 (record-time model I/O; replay must
+never call a model) is implemented with full attention. Resume: docs/slices/CONTINUATION.md.
+main hash 8749bf8a… unchanged; staging baseline 424d858c…. No unsafe partial work; no fake done.

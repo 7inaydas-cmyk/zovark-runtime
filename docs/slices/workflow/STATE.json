@@ -15,7 +15,7 @@
     "branch": "main",
     "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
     "current_slice": 6,
-    "current_phase": "slice6 committed (staging)",
+    "current_phase": "CHECKPOINT after slice6 (staging); slices 7,8 remain",
     "current_branch": "slices-5-8-staging"
   },
   "baseline": {
@@ -40,7 +40,7 @@
     "slice3": "c40b4bc (merged main)",
     "slice4": "43f5812 (merged main)",
     "slice5": "3f6f9c7 (staging)",
-    "slice6": null,
+    "slice6": "68a6c95 (staging)",
     "slice7": null,
     "slice8": null
   },
@@ -50,5 +50,5 @@
   },
   "unresolved_fail_safe_notes": [],
   "unresolved_dangerous_direction_findings": [],
-  "stop_reason": null
+  "stop_reason": "context-budget safe-partial checkpoint; resume via docs/slices/CONTINUATION.md"
 }
