@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/audit-chain-entry/v1.0.0/schema.json",
+  "title": "Proof Package — Audit Chain Entry (tape close)",
+  "description": "The genesis-anchored tape-close audit entry (sequence 1). SHAPE contract only; hash-chain integrity is enforced by proof-package-verify.",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["created_at", "entry_id", "event_type", "payload", "prev_entry_hash", "sequence", "signed_root", "tenant_id", "this_entry_hash"],
+  "properties": {
+    "created_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "entry_id": { "type": "string", "pattern": "^audit-entry-[0-9]+$" },
+    "event_type": { "const": "tape_recording_closed" },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fields_hash", "tape_id", "verdict_value"],
+      "properties": {
+        "fields_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "tape_id": { "type": "string", "pattern": "^tape-[0-9a-f]{16}$" },
+        "verdict_value": {
+          "type": "string",
+          "enum": ["benign", "confirmed_malicious", "inconclusive_insufficient_evidence", "suspicious_unconfirmed"]
+        }
+      }
+    },
+    "prev_entry_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sequence": { "const": 1 },
+    "signed_root": { "const": null },
+    "tenant_id": { "type": "string", "minLength": 1 },
+    "this_entry_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

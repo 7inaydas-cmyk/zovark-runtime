@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/verdict/v1.0.0/schema.json",
+  "title": "Proof Package — Verdict",
+  "description": "Deterministic verdict derived from findings. SHAPE contract only; that the verdict follows from the findings (which follow from evidence) is enforced by proof-package-verify (verdict_mismatch).",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["derivation_rule", "evidence_refs", "highest_severity_finding", "model_contribution", "set_at", "signing_tag", "value"],
+  "properties": {
+    "derivation_rule": { "type": "string", "minLength": 1 },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^ev-[0-9a-f]{64}$" }
+    },
+    "highest_severity_finding": { "type": "string", "minLength": 1 },
+    "model_contribution": { "const": false },
+    "set_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "signing_tag": { "type": "string", "pattern": "^sig-[0-9a-f]{64}$" },
+    "value": {
+      "type": "string",
+      "description": "Verdict vocabulary (verdict.APPROVED_VERDICTS). Which value is actually derivable is a semantic property enforced by proof-package-verify, not by this shape schema.",
+      "enum": ["benign", "confirmed_malicious", "inconclusive_insufficient_evidence", "suspicious_unconfirmed"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/findings/v1.0.0/schema.json",
+  "title": "Proof Package — Findings",
+  "description": "Deterministic rule-derived findings. SHAPE contract only; that findings actually follow from the evidence is enforced by proof-package-verify (findings_mismatch).",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["evidence_refs", "mitre_technique", "model_contribution", "rule_id", "severity", "title"],
+    "properties": {
+      "evidence_refs": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "pattern": "^ev-[0-9a-f]{64}$" }
+      },
+      "mitre_technique": { "type": "string", "minLength": 1 },
+      "model_contribution": { "const": false },
+      "rule_id": { "type": "string", "minLength": 1 },
+      "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+      "title": { "type": "string", "minLength": 1 }
+    }
+  }
+}

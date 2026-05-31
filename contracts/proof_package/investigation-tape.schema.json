@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/investigation-tape/v1.0.0/schema.json",
+  "title": "Proof Package — Investigation Tape (sealed)",
+  "description": "Internal proof substrate: the sealed tape embedding evidence, timeline, findings, verdict, and handoff summary. SHAPE contract only; full-chain re-derivation (evidence hashes -> findings -> verdict) is enforced by proof-package-verify.",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "timestamp": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "evidenceId": { "type": "string", "pattern": "^ev-[0-9a-f]{64}$" },
+    "verdictValue": {
+      "type": "string",
+      "enum": ["benign", "confirmed_malicious", "inconclusive_insufficient_evidence", "suspicious_unconfirmed"]
+    },
+    "evidenceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "source_type", "hash", "raw_content", "ingested_at"],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/evidenceId" },
+        "source_type": {
+          "type": "string",
+          "enum": ["edr_alert", "process_event", "network_event", "network_flow", "credential_access", "lateral_movement_attempt"]
+        },
+        "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "raw_content": { "type": "object" },
+        "ingested_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_refs", "mitre_technique", "model_contribution", "rule_id", "severity", "title"],
+      "properties": {
+        "evidence_refs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/evidenceId" } },
+        "mitre_technique": { "type": "string", "minLength": 1 },
+        "model_contribution": { "const": false },
+        "rule_id": { "type": "string", "minLength": 1 },
+        "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] },
+        "title": { "type": "string", "minLength": 1 }
+      }
+    },
+    "timelineEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "at", "decision_contribution", "event_type", "evidence_refs"],
+      "properties": {
+        "actor": { "const": "system" },
+        "at": { "$ref": "#/$defs/timestamp" },
+        "decision_contribution": { "type": "boolean" },
+        "event_type": { "type": "string", "enum": ["alert_received", "evidence_added"] },
+        "evidence_refs": { "type": "array", "items": { "$ref": "#/$defs/evidenceId" } }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["derivation_rule", "evidence_refs", "highest_severity_finding", "model_contribution", "set_at", "signing_tag", "value"],
+      "properties": {
+        "derivation_rule": { "type": "string", "minLength": 1 },
+        "evidence_refs": { "type": "array", "items": { "$ref": "#/$defs/evidenceId" } },
+        "highest_severity_finding": { "type": "string", "minLength": 1 },
+        "model_contribution": { "const": false },
+        "set_at": { "$ref": "#/$defs/timestamp" },
+        "signing_tag": { "type": "string", "pattern": "^sig-[0-9a-f]{64}$" },
+        "value": { "$ref": "#/$defs/verdictValue" }
+      }
+    }
+  },
+  "required": [
+    "audit_ref", "created_at", "findings", "handoff_ref", "handoff_summary", "raw_evidence",
+    "schema_version", "source_alert_ref", "state", "tape_id", "tenant_id", "timeline", "verdict"
+  ],
+  "properties": {
+    "audit_ref": { "type": "string", "pattern": "^audit-entry-[0-9]+$" },
+    "created_at": { "$ref": "#/$defs/timestamp" },
+    "findings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/finding" } },
+    "handoff_ref": { "type": "string", "pattern": "^handoff-[0-9a-f]{16}$" },
+    "handoff_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_type", "approval_mode", "execution_status", "target"],
+      "properties": {
+        "action_type": { "type": "string", "enum": ["isolate_host", "notify_only"] },
+        "approval_mode": { "const": "approval_required" },
+        "execution_status": { "const": "pending" },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["identifier", "kind"],
+          "properties": {
+            "identifier": { "type": "string", "minLength": 1 },
+            "kind": { "type": "string", "enum": ["host", "custom"] }
+          }
+        }
+      }
+    },
+    "raw_evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/evidenceEntry" } },
+    "schema_version": { "const": "tape/1.0" },
+    "source_alert_ref": { "type": "string", "minLength": 1 },
+    "state": { "const": "closed" },
+    "tape_id": { "type": "string", "pattern": "^tape-[0-9a-f]{16}$" },
+    "tenant_id": { "type": "string", "minLength": 1 },
+    "timeline": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/timelineEvent" } },
+    "verdict": { "$ref": "#/$defs/verdict" }
+  }
+}

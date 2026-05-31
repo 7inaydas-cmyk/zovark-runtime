@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/evidence-ledger/v1.0.0/schema.json",
+  "title": "Proof Package — Evidence Ledger",
+  "description": "Content-addressed evidence entries normalized from the source alert. SHAPE contract only; semantic correctness (hash == raw_content, findings follow from evidence) is enforced by proof-package-verify.",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["evidence_id", "source_type", "hash", "raw_content", "ingested_at"],
+    "properties": {
+      "evidence_id": { "type": "string", "pattern": "^ev-[0-9a-f]{64}$" },
+      "source_type": {
+        "type": "string",
+        "enum": [
+          "edr_alert",
+          "process_event",
+          "network_event",
+          "network_flow",
+          "credential_access",
+          "lateral_movement_attempt"
+        ]
+      },
+      "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+      "raw_content": { "type": "object" },
+      "ingested_at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" }
+    }
+  }
+}

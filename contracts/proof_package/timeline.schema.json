@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.zovark.io/proof_package/timeline/v1.0.0/schema.json",
+  "title": "Proof Package — Timeline",
+  "description": "Deterministic chronological reconstruction. SHAPE contract only; ordering/semantic checks are enforced by proof-package-verify.",
+  "x-zovark-schema-version": "1.0.0",
+  "x-zovark-owner": "zovark-runtime",
+  "x-zovark-visibility": "internal",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["actor", "at", "decision_contribution", "event_type", "evidence_refs"],
+    "properties": {
+      "actor": { "const": "system" },
+      "at": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+      "decision_contribution": { "type": "boolean" },
+      "event_type": { "type": "string", "enum": ["alert_received", "evidence_added"] },
+      "evidence_refs": {
+        "type": "array",
+        "items": { "type": "string", "pattern": "^ev-[0-9a-f]{64}$" }
+      }
+    }
+  }
+}
