@@ -33,13 +33,22 @@ Verdict/action/severity enums describe the code's vocabulary
 Which values are actually *derivable* is a semantic property the verifier enforces, not
 the shape schema.
 
-## Provenance and authoring decision
+## Recorded decision (schema authority)
 
-- **Authored in `zovark-runtime`** (runtime-original), not in `zovark-architecture`.
-  Rationale: architecture is the read-only canonical authority and was not authorized
-  to change for this slice; the proof-package artifact contract is implemented and
-  owned by the runtime generator today. Promotion of these schemas into the
-  architecture authority is a future decision, out of scope for Slice 2.
+- For this slice, the proof-package schemas **live in `zovark-runtime`** under
+  `contracts/proof_package/` (runtime-original), not in `zovark-architecture`.
+- **Promotion to the `zovark-architecture` authority requires a separate, explicit
+  architecture change.** It is out of scope for Slice 2.
+- **`zovark-architecture` remains read-only** in this slice (it was not authorized to
+  change); it is the canonical authority.
+- **Schema validation is necessary-not-sufficient.** These schemas are a contract/shape
+  check, **not** the security boundary. **`proof-package-verify` remains authoritative**
+  for semantic re-derivation (evidence hashes → findings → verdict, fail-closed).
+
+## Provenance
+
+- Rationale: the proof-package artifact contract is implemented and owned by the runtime
+  generator today, so the shape schemas are authored alongside it in runtime.
 - Derived from the deterministic generator's own validator field-sets in
   `src/zovark_runtime/proof_package/{tape,timeline,findings,verdict,handoff,audit,replay,writer}.py`
   at runtime `main` `83927ad8b86c5360f708a78413e8d5640b6392f2`.
