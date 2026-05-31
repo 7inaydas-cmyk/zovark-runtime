@@ -40,7 +40,20 @@ slice below needs an explicit operator decision before any adoption to `main`.
   fetch is operator-gated, off the deterministic path), or request changes.
 
 ## Slice 7 — recorded live-AI investigation
-- _(to be completed when Slice 7 is built on staging)_
+- **Model record-time boundary:** `ai_investigation.record_ai_investigation` calls a model
+  ONLY at record time (deterministic FakeModelProvider in CI; a real provider would be
+  caller-supplied at record time only). Output recorded losslessly + anchored in the
+  investigation_memory store.
+- **Replay no-live-call proof:** `replay_ai_investigation` rejects a provider arg, reads only
+  the recorded artifact + store anchor, re-checks all hashes; monkeypatch-proven no model/
+  network call. `no_live_llm_call`/`no_live_edr_call` true.
+- **Model I/O hash evidence:** prompt_hash + model_output_hash + content-addressed store
+  anchor; tamper (incl. consistent re-hash) fails closed.
+- **model_contribution:** honestly true on the recorded AI artifact; the deterministic
+  verdict stays rule-based (model_contribution=false) and is byte-unchanged — model is
+  recorded evidence, NEVER verdict authority.
+- **OPERATOR DECISION REQUIRED:** approve the recorded-AI record-time boundary for merge, or
+  request changes. (Real model adapter is future work; only the deterministic fake ships.)
 
 ## Slice 8 — runtime schema enforcement + proof-status
 - _(to be completed when Slice 8 is built on staging)_

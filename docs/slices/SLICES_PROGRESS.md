@@ -74,3 +74,16 @@ zero unresolved DANGEROUS-DIRECTION). Slices 7+8 remain. Checkpointed at a clean
 boundary (context budget) so the safety-critical Slice 7 (record-time model I/O; replay must
 never call a model) is implemented with full attention. Resume: docs/slices/CONTINUATION.md.
 main hash 8749bf8a… unchanged; staging baseline 424d858c…. No unsafe partial work; no fake done.
+
+## Slice 7 — recorded live-AI investigation (2026-06-01) [STAGING ONLY]
+- Files: proof_package/ai_investigation.py, cli.py (ai-investigate/ai-replay),
+  tests/test_ai_investigation.py, docs.
+- Record-time model call only (deterministic FakeModelProvider); offline replay never calls
+  model/network (rejects provider, store-anchored, hashes re-checked); model output is
+  recorded evidence, NEVER verdict authority; deterministic verdict byte-unchanged.
+- 9 ai tests; full suite 324 passed; Phase-0 PASS. Canonical staging hash 424d858c… unchanged.
+- Independent audit: PASS, zero DANGEROUS-DIRECTION (F2 unused import removed; store.verify
+  belt-and-suspenders added; F1 documented FAIL-SAFE).
+- Unresolved DANGEROUS-DIRECTION: 0.
+
+| 7 | slices-5-8-staging | (pending commit) | ✅ green + audited (staging) |

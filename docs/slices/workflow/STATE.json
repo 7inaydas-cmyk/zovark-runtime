@@ -14,8 +14,8 @@
   "current": {
     "branch": "main",
     "head": "57ae9d85dcb9a06fa8454f9b369a35648124c365",
-    "current_slice": 6,
-    "current_phase": "CHECKPOINT after slice6 (staging); slices 7,8 remain",
+    "current_slice": 7,
+    "current_phase": "slice7 committed (staging)",
     "current_branch": "slices-5-8-staging"
   },
   "baseline": {
@@ -28,7 +28,7 @@
   "tests": {
     "passed": null,
     "failed": null,
-    "last_full_suite": "315 passed"
+    "last_full_suite": "324 passed"
   },
   "proof_package_hashes": {
     "canonical": "8749bf8af7a403110b3a622a22107cc0645e7fe8c455291da9c945e9513445a0"
@@ -50,5 +50,5 @@
   },
   "unresolved_fail_safe_notes": [],
   "unresolved_dangerous_direction_findings": [],
-  "stop_reason": "context-budget safe-partial checkpoint; resume via docs/slices/CONTINUATION.md"
+  "stop_reason": null
 }

@@ -60,6 +60,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     connect.add_argument("--recorded", required=True, help="Recorded provider response JSON")
     connect.add_argument("--output", required=True, help="Output deterministic input JSON path")
+
+    ai = subcommands.add_parser(
+        "ai-investigate",
+        help="Record-time AI investigation (deterministic fake provider): records model "
+        "I/O losslessly. Advisory evidence only; never verdict authority.",
+    )
+    ai.add_argument("--package", required=True, help="Generated proof-package directory")
+    ai.add_argument("--output", required=True, help="Output recorded AI-investigation JSON")
+    ai.add_argument("--memory-dir", required=True, help="investigation_memory store dir (anchor)")
+
+    air = subcommands.add_parser(
+        "ai-replay",
+        help="Offline re-validation of a recorded AI investigation (never calls a model).",
+    )
+    air.add_argument("--recorded", required=True, help="Recorded AI-investigation JSON")
+    air.add_argument("--memory-dir", required=True, help="investigation_memory store dir (anchor)")
     return parser
 
 
@@ -86,9 +102,53 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _adr0046_bridge(args)
     if args.command == "edr-connect":
         return _edr_connect(args)
+    if args.command == "ai-investigate":
+        return _ai_investigate(args)
+    if args.command == "ai-replay":
+        return _ai_replay(args)
 
     parser.error(f"unsupported command: {args.command}")
     return 2
+
+
+def _ai_investigate(args: argparse.Namespace) -> int:
+    from .investigation_memory.store import LocalInvestigationMemoryStore
+    from .proof_package import ZovarkValidationError
+    from .proof_package.adr0046_bridge import load_tape
+    from .proof_package.ai_investigation import FakeModelProvider, write_ai_investigation
+
+    try:
+        tape = load_tape(Path(args.package))
+        store = LocalInvestigationMemoryStore(Path(args.memory_dir))
+        recorded = write_ai_investigation(tape, FakeModelProvider(), Path(args.output), store)
+    except ZovarkValidationError as exc:
+        print(f"ai-investigate failed: {exc}", file=sys.stderr)
+        return 3
+    except OSError as exc:
+        print(f"ai-investigate output error: {exc}", file=sys.stderr)
+        return 4
+    _write_json({"output": str(Path(args.output)), "model_contribution": recorded["model_contribution"],
+                 "is_verdict_authority": recorded["is_verdict_authority"]})
+    return 0
+
+
+def _ai_replay(args: argparse.Namespace) -> int:
+    from .investigation_memory.store import LocalInvestigationMemoryStore
+    from .proof_package import ZovarkValidationError
+    from .proof_package.ai_investigation import replay_ai_investigation
+
+    try:
+        recorded = json.loads(Path(args.recorded).read_text(encoding="utf-8"))
+        store = LocalInvestigationMemoryStore(Path(args.memory_dir))
+        result = replay_ai_investigation(recorded, store)
+    except ZovarkValidationError as exc:
+        print(f"ai-replay failed: {exc}", file=sys.stderr)
+        return 3
+    except (OSError, ValueError) as exc:
+        print(f"ai-replay error: {exc}", file=sys.stderr)
+        return 4
+    _write_json(dict(result))
+    return 0
 
 
 def _edr_connect(args: argparse.Namespace) -> int:
