@@ -11,6 +11,7 @@ No network, no live LLM, no wall clock, no randomness. See /DESIGN.md.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +27,7 @@ from zovark_runtime.proof_package.audit import attach_audit_entry, derive_audit_
 from zovark_runtime.proof_package.canonical import canonical_json
 from zovark_runtime.proof_package.findings import attach_findings, derive_findings
 from zovark_runtime.proof_package.handoff import attach_handoff, derive_handoff
-from zovark_runtime.proof_package.ingest import load_sample, normalize_evidence
+from zovark_runtime.proof_package.ingest import normalize_evidence
 from zovark_runtime.proof_package.replay import attach_replay_report, derive_replay_report
 from zovark_runtime.proof_package.tape import create_tape
 from zovark_runtime.proof_package.timeline import attach_timeline, build_initial_timeline
@@ -36,6 +37,10 @@ from zovark_runtime.proof_package.writer import EXPECTED_OUTPUT_FILES, write_pro
 
 # Logical, content-neutral label for the ingest step that records evidence.
 _SOURCE_TOOL_CALL_REF = "edr-ingest"
+
+# Ingestion-security bounds (fail-closed) for the untrusted input file.
+_MAX_INPUT_BYTES = 8 * 1024 * 1024  # 8 MiB
+_MAX_INPUT_DEPTH = 64
 
 
 def build_completed_tape(
@@ -87,11 +92,10 @@ def run_proof_package(
     investigation_memory directory used.
     """
 
-    raw_input = load_sample(input_path)
-    if not isinstance(raw_input, dict):
-        raise ZovarkValidationError("proof-package input must be a JSON object")
+    raw_input = _safe_load_input(Path(input_path))
 
     out_path = Path(output_dir)
+    _assert_output_dir_safe(out_path)
     resolved_memory_dir = (
         Path(memory_dir)
         if memory_dir is not None
@@ -109,6 +113,71 @@ def run_proof_package(
         "tape_id": tape["tape_id"],
         "verdict": tape["verdict"]["value"],
     }
+
+
+def _safe_load_input(input_path: Path) -> dict[str, Any]:
+    """Load + parse the untrusted input file with fail-closed bounds.
+
+    Rejects oversized input, non-finite numbers (NaN/Infinity), excessive nesting,
+    and non-object top-level values. All failures raise ZovarkValidationError so the
+    CLI never emits a partial package or an uncaught traceback.
+    """
+
+    try:
+        raw_bytes = input_path.read_bytes()
+    except OSError as exc:
+        raise ZovarkValidationError(f"input could not be read: {input_path}") from exc
+    if len(raw_bytes) > _MAX_INPUT_BYTES:
+        raise ZovarkValidationError(
+            f"input exceeds the {_MAX_INPUT_BYTES}-byte limit"
+        )
+    try:
+        text = raw_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ZovarkValidationError("input must be UTF-8 encoded JSON") from exc
+
+    def _reject_constant(token: str) -> Any:
+        raise ZovarkValidationError(f"input contains a non-finite number: {token}")
+
+    try:
+        parsed = json.loads(text, parse_constant=_reject_constant)
+    except json.JSONDecodeError as exc:
+        raise ZovarkValidationError(f"input is not valid JSON: {input_path}") from exc
+    except RecursionError as exc:  # pragma: no cover - defensive
+        raise ZovarkValidationError("input nesting is too deep") from exc
+
+    if not isinstance(parsed, dict):
+        raise ZovarkValidationError("proof-package input must be a JSON object")
+    _assert_bounded_depth(parsed, _MAX_INPUT_DEPTH)
+    return parsed
+
+
+def _assert_bounded_depth(value: Any, max_depth: int, _depth: int = 0) -> None:
+    if _depth > max_depth:
+        raise ZovarkValidationError(
+            f"input nesting exceeds the {max_depth}-level limit"
+        )
+    if isinstance(value, dict):
+        for item in value.values():
+            _assert_bounded_depth(item, max_depth, _depth + 1)
+    elif isinstance(value, list):
+        for item in value:
+            _assert_bounded_depth(item, max_depth, _depth + 1)
+
+
+def _assert_output_dir_safe(out_path: Path) -> None:
+    """Refuse to write through symlinks (no overwrite outside the output dir)."""
+
+    if out_path.is_symlink():
+        raise ZovarkValidationError("output directory must not be a symlink")
+    if out_path.exists() and not out_path.is_dir():
+        raise ZovarkValidationError("output path must be a directory")
+    for filename in EXPECTED_OUTPUT_FILES:
+        target = out_path / filename
+        if target.is_symlink():
+            raise ZovarkValidationError(
+                f"refusing to write through a symlink: {filename}"
+            )
 
 
 def _record_evidence(

@@ -14,8 +14,12 @@ were vendored verbatim from the architecture authority repo's reference pipeline
 Only the stdlib-only, deterministic modules were vendored. `cli.py`,
 `local_testbed.py`, and `v3_adapter.py` were intentionally **not** vendored.
 
-`pipeline.py` (orchestration + `investigation_memory` recording/verification) is
-runtime-original and is **not** vendored.
+`pipeline.py` (orchestration + `investigation_memory` recording/verification +
+fail-closed input loader + output symlink guard) and `verify.py` (strict offline
+verification that re-derives findings from evidence — closing a dangerous-direction
+gap in the vendored `package_verifier`, see DESIGN.md §2) are **runtime-original**
+and are **not** vendored. They are layered on top of the verbatim vendored modules,
+so the vendored code stays byte-identical to the oracle source.
 
 Rationale and the full design reconciliation are in `/DESIGN.md` (§3). Vendoring
 is read-only on architecture: the source was copied, never modified.

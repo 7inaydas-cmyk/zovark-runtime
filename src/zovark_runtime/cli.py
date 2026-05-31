@@ -98,10 +98,10 @@ def _proof_package_build(args: argparse.Namespace) -> int:
 
 def _proof_package_verify(args: argparse.Namespace) -> int:
     from .proof_package import ZovarkValidationError
-    from .proof_package.package_verifier import verify_proof_package
+    from .proof_package.verify import verify_proof_package_strict
 
     try:
-        summary = verify_proof_package(Path(args.package))
+        summary = verify_proof_package_strict(Path(args.package))
     except ZovarkValidationError as exc:
         print(f"proof-package verification failed: {exc}", file=sys.stderr)
         return 3

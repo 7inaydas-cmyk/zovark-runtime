@@ -9,7 +9,7 @@ One end-to-end, offline, deterministic command in `zovark-runtime`:
 
 ```
 zovark-runtime proof-package --input <edr-alert.json> --output <dir> [--tenant-id ...] [--memory-dir <dir>]
-zovark-runtime proof-package verify --package <dir>
+zovark-runtime proof-package-verify --package <dir>
 ```
 
 `proof-package` ingests one static EDR-style alert JSON and writes the **9-file
@@ -63,10 +63,21 @@ not.** Investigated in Phase 1:
   schemas would be incorrect, not conformant.
 
 **Decision (criterion 4):** the binding "authority schema validation" for this
-slice is the authority's own validator — `package_verifier` re-derivation, vendored
-verbatim and exposed as `proof-package verify` (exit 0 == valid). Authoring
-standalone JSON Schemas for the proof-package contract, and wiring the ADR-0046
-`verdict_envelope`/`replay_record` contract, are **NEXT_SLICES** items, not this one.
+slice is re-derivation. The vendored `package_verifier` re-derives the
+verdict→handoff→audit→replay→customer-report chain and re-checks every evidence
+hash, but it does **not** re-derive `findings` from the evidence (a gap inherited
+from the oracle's verifier — caught in Phase-4 audit). The runtime exposes a
+**strict** verifier (`proof_package/verify.py`, runtime-original) as
+`proof-package-verify`: it runs the vendored verifier (which hash-verifies the
+evidence) and then **re-derives the findings from the recorded evidence ledger**,
+requiring an exact match. Only then is a package "verified" — every artifact,
+including findings, is re-derived from the recorded inputs. A self-consistent
+package whose findings were fabricated or suppressed (e.g. a real malicious alert
+downgraded to `benign`) is rejected (`findings_not_derived_from_evidence`); the
+vendored-only verifier would accept it.
+
+Authoring standalone JSON Schemas for the proof-package contract, and wiring the
+ADR-0046 `verdict_envelope`/`replay_record` contract, are **NEXT_SLICES** items.
 
 ## 3. Implementation strategy — vendor + reuse (the shorter path)
 
@@ -98,9 +109,10 @@ imports `zovark.slice001 → zovark_runtime.proof_package`. Rationale:
   store (content-addressed, lossless, no wall-clock in metadata). Before sealing,
   the pipeline **re-verifies every evidence item from the store** (`store.verify()`,
   which re-hashes the stored bytes); a mismatch aborts the run fail-closed. This is
-  the runtime substrate "recording the investigation" and providing tamper-evidence,
-  layered *alongside* slice001's in-tape re-hash so `replay-report.json` stays
-  byte-conformant.
+  **build-time** recording + tamper-evidence, layered *alongside* slice001's in-tape
+  re-hash so `replay-report.json` stays byte-conformant. Integrity of an *exported*
+  package is covered separately by `proof-package-verify` (re-derivation, above) —
+  the store is not consulted when verifying a delivered package.
 - **`proof_package.canonical`/`hashing`** are vendored from slice001 rather than
   reusing runtime's `verdict_derivation.canonical_json_bytes`. Reason: slice001 uses
   `ensure_ascii=False`; runtime's helper uses `ensure_ascii=True`. They diverge for
@@ -131,15 +143,20 @@ imports `zovark.slice001 → zovark_runtime.proof_package`. Rationale:
 ## 5. Ingestion security model
 
 - Input is parsed with `json.loads` only (no `eval`, no `pickle`, no YAML, no
-  custom deserialization). Non-object top-level input is rejected.
+  custom deserialization). The runtime boundary loader (`pipeline._safe_load_input`)
+  enforces fail-closed bounds before any derivation: max 8 MiB, UTF-8 only, no
+  non-finite numbers (`NaN`/`Infinity` rejected via `parse_constant`), max 64 levels
+  of nesting, and a JSON-object top level. All violations raise
+  `ZovarkValidationError` — never a partial package or an uncaught traceback.
 - Evidence normalization requires a deterministic timestamp and an alert reference;
-  malformed arrays/objects raise `ZovarkValidationError` (fail-closed, never a
-  partial package).
+  malformed arrays/objects raise `ZovarkValidationError` (fail-closed).
 - Output directory is path-checked: the writer only writes a **fixed allowlist** of
   9 filenames (no path traversal from input content), and refuses to write into a
-  directory that already contains unexpected files. The `investigation_memory` store
-  is written to a **separate** `--memory-dir` (default `<output>/../proof-package-memory`),
-  never into the package directory.
+  directory that already contains unexpected files. The runtime layer additionally
+  **refuses to write through a symlink** (the output dir or any target artifact being
+  a symlink is rejected), so a pre-placed symlink cannot redirect a write outside the
+  output dir. The `investigation_memory` store is written to a **separate**
+  `--memory-dir` (default `<output>.memory`, a sibling), never into the package dir.
 - No secrets, no hardcoded Nango IDs. The only credential-shaped string is the
   inherited placeholder `vault://placeholder/bootstrap` (a literal placeholder, not a
   secret).

@@ -16,8 +16,18 @@ import pytest
 
 from zovark_runtime.investigation_memory.store import LocalInvestigationMemoryStore
 from zovark_runtime.proof_package import ZovarkValidationError
+from zovark_runtime.proof_package.audit import attach_audit_entry, derive_audit_entry
+from zovark_runtime.proof_package.findings import attach_findings
+from zovark_runtime.proof_package.handoff import attach_handoff, derive_handoff
+from zovark_runtime.proof_package.ingest import normalize_evidence
 from zovark_runtime.proof_package.package_verifier import verify_proof_package
 from zovark_runtime.proof_package.pipeline import build_completed_tape, run_proof_package
+from zovark_runtime.proof_package.replay import attach_replay_report, derive_replay_report
+from zovark_runtime.proof_package.tape import create_tape
+from zovark_runtime.proof_package.timeline import attach_timeline, build_initial_timeline
+from zovark_runtime.proof_package.verdict import attach_verdict, derive_verdict
+from zovark_runtime.proof_package.verify import verify_proof_package_strict
+from zovark_runtime.proof_package.writer import write_proof_package
 
 FIXTURE = Path(__file__).parent / "fixtures" / "edr-sample-001.json"
 NINE_ARTIFACTS = (
@@ -140,6 +150,90 @@ def test_investigation_memory_tamper_aborts_fail_closed(tmp_path: Path) -> None:
 def test_rejects_non_object_input(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text("[1, 2, 3]")
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
+def _forge_self_consistent_package(out: Path, *, forged_findings: list) -> None:
+    """Build a fully self-consistent package whose findings do NOT follow from the
+    evidence (verdict/handoff/audit/replay all recomputed from the forged findings)."""
+    raw = json.loads(FIXTURE.read_text())
+    ev = normalize_evidence(raw)
+    tape = create_tape(raw, ev, tenant_id="tenant-001")
+    tape = attach_timeline(tape, build_initial_timeline(tape))
+    tape = attach_findings(tape, forged_findings, False)
+    tape = attach_verdict(tape, derive_verdict(tape))
+    tape["audit_ref"] = "audit-entry-1"
+    tape = attach_handoff(tape, derive_handoff(tape))
+    tape = attach_audit_entry(tape, derive_audit_entry(tape))
+    tape = attach_replay_report(tape, derive_replay_report(tape))
+    write_proof_package(tape, out)
+
+
+def test_strict_verify_rejects_suppressed_findings(tmp_path: Path) -> None:
+    """A self-consistent package that downgrades a real malicious alert to benign
+    must be rejected by strict verification (findings re-derived from evidence)."""
+    out = tmp_path / "forge"
+    base = tmp_path / "honest"
+    run_proof_package(FIXTURE, base, tenant_id="tenant-001")
+    ev0 = json.loads((base / "evidence-ledger.json").read_text())[0]["evidence_id"]
+    _forge_self_consistent_package(
+        out,
+        forged_findings=[
+            {
+                "evidence_refs": [ev0],
+                "model_contribution": False,
+                "severity": "low",
+                "title": "Routine activity (forged)",
+            }
+        ],
+    )
+    # The forgery is internally consistent: the vendored verifier accepts it...
+    assert verify_proof_package(out)["status"] == "verified"
+    assert json.loads((out / "verdict.json").read_text())["value"] == "benign"
+    # ...but strict verification re-derives findings from evidence and rejects it.
+    with pytest.raises(ZovarkValidationError):
+        verify_proof_package_strict(out)
+
+
+def test_strict_verify_passes_on_honest_package(tmp_path: Path) -> None:
+    out = tmp_path / "pkg"
+    run_proof_package(FIXTURE, out, tenant_id="tenant-001")
+    summary = verify_proof_package_strict(out)
+    assert summary["status"] == "verified"
+    assert summary["findings_rederived_from_evidence"] is True
+
+
+def test_output_symlink_is_refused(tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    out.mkdir()
+    victim = tmp_path / "victim"
+    victim.write_text("ORIGINAL")
+    (out / "verdict.json").symlink_to(victim)
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(FIXTURE, out, tenant_id="tenant-001")
+    assert victim.read_text() == "ORIGINAL"  # not overwritten through the symlink
+
+
+def test_non_finite_number_input_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "nan.json"
+    bad.write_text('{"alert_id":"x","timestamp":"2026-05-01T10:00:00Z","v":NaN}')
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
+def test_deeply_nested_input_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "deep.json"
+    bad.write_text("{" + '"a":{' * 200 + '"x":1' + "}" * 200 + "}")
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
+
+
+def test_oversized_input_rejected(tmp_path: Path) -> None:
+    bad = tmp_path / "big.json"
+    # > 8 MiB of valid JSON
+    bad.write_text('{"alert_id":"x","timestamp":"2026-05-01T10:00:00Z","pad":"'
+                   + "a" * (9 * 1024 * 1024) + '"}')
     with pytest.raises(ZovarkValidationError):
         run_proof_package(bad, tmp_path / "pkg", tenant_id="tenant-001")
 
