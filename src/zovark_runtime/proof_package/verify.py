@@ -39,7 +39,16 @@ def verify_proof_package_strict(package_dir: str | Path) -> dict[str, Any]:
     package_path = Path(package_dir)
     # Step 1: the vendored verifier re-derives the verdict/handoff/audit/replay
     # chain and re-checks every evidence content hash. Raises on any mismatch.
-    summary = dict(verify_proof_package(package_path))
+    # Bound malformed-package failure modes (e.g. a maliciously deep JSON file) to a
+    # clean ZovarkValidationError instead of an uncaught RecursionError/ValueError.
+    try:
+        summary = dict(verify_proof_package(package_path))
+    except RecursionError as exc:
+        raise ZovarkValidationError("malformed_json: package JSON nesting is too deep") from exc
+    except ValueError as exc:
+        if isinstance(exc, ZovarkValidationError):
+            raise
+        raise ZovarkValidationError(f"malformed_json: package contains an invalid value: {exc}") from exc
 
     # Step 2: re-derive findings from the (now hash-verified) evidence ledger and
     # require an exact match. This is the link the vendored verifier omits.
@@ -68,5 +77,7 @@ def _load_json(path: Path) -> Any:
         raise ZovarkValidationError(f"malformed_json: {path.name} is missing") from exc
     except json.JSONDecodeError as exc:
         raise ZovarkValidationError(f"malformed_json: {path.name} is not valid JSON") from exc
+    except RecursionError as exc:
+        raise ZovarkValidationError(f"malformed_json: {path.name} nesting is too deep") from exc
     except OSError as exc:
         raise ZovarkValidationError(f"malformed_json: {path.name} could not be read") from exc

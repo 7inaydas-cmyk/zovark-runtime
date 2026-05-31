@@ -102,6 +102,10 @@ def run_proof_package(
         if memory_dir is not None
         else out_path.parent / f"{out_path.name}.memory"
     )
+    # Mirror the output-dir guard: refuse a symlinked memory-store root (the store's
+    # per-component guard covers everything under the root, but not the root itself).
+    if resolved_memory_dir.is_symlink():
+        raise ZovarkValidationError("memory directory must not be a symlink")
     store = LocalInvestigationMemoryStore(resolved_memory_dir)
 
     tape = build_completed_tape(raw_input, tenant_id=tenant_id, memory_store=store)

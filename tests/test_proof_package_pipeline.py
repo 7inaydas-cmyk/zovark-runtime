@@ -263,6 +263,26 @@ def test_memory_store_symlinked_parent_dir_is_refused(tmp_path: Path) -> None:
     assert list(escape.iterdir()) == []  # nothing written into the escape target
 
 
+def test_memory_store_symlinked_root_is_refused(tmp_path: Path) -> None:
+    """A symlinked memory-store root must be refused (no write through the root)."""
+    real = tmp_path / "real"
+    real.mkdir()
+    link = tmp_path / "memlink"
+    link.symlink_to(real)
+    with pytest.raises(ZovarkValidationError):
+        run_proof_package(FIXTURE, tmp_path / "pkg", tenant_id="tenant-001", memory_dir=link)
+    assert list(real.iterdir()) == []
+
+
+def test_verify_deeply_nested_artifact_fails_closed(tmp_path: Path) -> None:
+    """A maliciously deep JSON artifact must fail-closed in verify (no traceback)."""
+    out = tmp_path / "pkg"
+    run_proof_package(FIXTURE, out, tenant_id="tenant-001")
+    (out / "timeline.json").write_text("[" * 50000 + "]" * 50000)
+    with pytest.raises(ZovarkValidationError):
+        verify_proof_package_strict(out)
+
+
 def test_lone_surrogate_string_input_rejected(tmp_path: Path) -> None:
     bad = tmp_path / "surr.json"
     bad.write_text(
